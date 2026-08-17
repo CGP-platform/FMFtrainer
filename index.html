@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMF Officer Study Trainer</title>
+<style>
+  :root{
+    --navy:#0b2545;
+    --navy-light:#13355e;
+    --scarlet:#a6192e;
+    --scarlet-dark:#7d1322;
+    --gold:#c5a253;
+    --bg:#f5f3ef;
+    --card:#ffffff;
+    --ink:#1c2430;
+    --ink-soft:#5b6472;
+    --line:#e2ddd3;
+    --good:#1e7a4c;
+    --warn:#b8860b;
+    --bad:#a6192e;
+    --radius:14px;
+    --shadow:0 2px 10px rgba(11,37,69,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:960px;margin:0 auto;padding:20px 16px 60px;}
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:18px 20px;background:linear-gradient(135deg,var(--navy),var(--navy-light));
+    border-radius:var(--radius);color:#fff;margin-bottom:16px;box-shadow:var(--shadow);
+  }
+  header.top h1{font-size:1.15rem;margin:0;letter-spacing:.2px;}
+  header.top p{margin:2px 0 0;font-size:.8rem;color:#cfe0ee;}
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .pill{
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    padding:4px 10px;border-radius:999px;font-size:.72rem;color:#fff;white-space:nowrap;
+  }
+  nav.tabs{
+    display:flex;gap:6px;margin-bottom:18px;background:var(--card);
+    padding:6px;border-radius:12px;box-shadow:var(--shadow);flex-wrap:wrap;
+  }
+  nav.tabs button{
+    flex:1;min-width:110px;border:none;background:transparent;color:var(--ink-soft);
+    padding:10px 8px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;
+    transition:.15s;
+  }
+  nav.tabs button.active{background:var(--navy);color:#fff;}
+  nav.tabs button:hover:not(.active){background:#eee9df;}
+  .card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:20px;margin-bottom:16px;border:1px solid var(--line);
+  }
+  .card h2{margin-top:0;font-size:1.05rem;color:var(--navy);}
+  .card h3{font-size:.95rem;color:var(--navy);margin-bottom:6px;}
+  .muted{color:var(--ink-soft);font-size:.85rem;line-height:1.5;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr;}}
+  .stat{
+    background:#faf9f6;border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center;
+  }
+  .stat .num{font-size:1.6rem;font-weight:700;color:var(--navy);}
+  .stat .lbl{font-size:.72rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--navy);color:#fff;border:none;padding:10px 16px;border-radius:9px;
+    font-size:.85rem;font-weight:600;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{background:var(--navy-light);}
+  .btn.scarlet{background:var(--scarlet);}
+  .btn.scarlet:hover{background:var(--scarlet-dark);}
+  .btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--navy);}
+  .btn.ghost:hover{background:#eef2f7;}
+  .btn.sm{padding:6px 12px;font-size:.78rem;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  select, input[type=number]{
+    padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:.85rem;background:#fff;
+  }
+  .progress-bar{height:8px;background:#e9e4d8;border-radius:99px;overflow:hidden;}
+  .progress-bar > div{height:100%;background:linear-gradient(90deg,var(--gold),var(--scarlet));}
+  .section-bar{margin-bottom:10px;}
+  .section-bar .hd{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px;color:var(--ink-soft);}
+  .flash{
+    min-height:180px;border:1px solid var(--line);border-radius:12px;padding:22px;
+    background:#faf9f6;display:flex;flex-direction:column;justify-content:center;gap:12px;
+  }
+  .flash .tag{font-size:.7rem;color:var(--scarlet);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .flash .q{font-size:1.05rem;font-weight:600;line-height:1.4;}
+  .flash .a{font-size:.95rem;line-height:1.5;color:var(--navy-light);border-top:1px dashed var(--line);padding-top:12px;}
+  .rate-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;}
+  .rate-btn{padding:10px 4px;border-radius:8px;border:none;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;}
+  .rate-again{background:#8c2f39;}
+  .rate-hard{background:var(--warn);}
+  .rate-good{background:var(--good);}
+  .rate-easy{background:#2f6fed;}
+  textarea{
+    width:100%;min-height:90px;border-radius:9px;border:1px solid var(--line);padding:10px;
+    font-family:inherit;font-size:.88rem;resize:vertical;
+  }
+  .self-rate{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .self-rate button{
+    flex:1;min-width:90px;padding:9px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    cursor:pointer;font-size:.78rem;font-weight:600;color:var(--ink-soft);
+  }
+  .self-rate button.sel-missed{border-color:var(--bad);color:var(--bad);}
+  .self-rate button.sel-partial{border-color:var(--warn);color:var(--warn);}
+  .self-rate button.sel-solid{border-color:var(--good);color:var(--good);}
+  .board-progress{font-size:.8rem;color:var(--ink-soft);margin-bottom:8px;}
+  #boardRun{position:relative;}
+  .rah-pop{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.6);
+    font-size:3.2rem;font-weight:800;color:var(--scarlet);text-shadow:0 2px 0 var(--gold);
+    pointer-events:none;opacity:0;z-index:5;letter-spacing:.5px;
+  }
+  .rah-pop.show{animation:rahPop .75s ease-out forwards;}
+  @keyframes rahPop{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(-4deg);}
+    25%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(2deg);}
+    45%{transform:translate(-50%,-50%) scale(1) rotate(0deg);}
+    78%{opacity:1;}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.05) translateY(-34px);}
+  }
+  .result-banner{
+    padding:16px;border-radius:12px;text-align:center;font-weight:700;font-size:1.1rem;margin-bottom:10px;
+  }
+  .pass{background:#e6f4ea;color:var(--good);border:1px solid #b9e0c4;}
+  .fail{background:#fbe9ea;color:var(--bad);border:1px solid #f0bcc2;}
+  footer.note{font-size:.75rem;color:var(--ink-soft);text-align:center;margin-top:24px;line-height:1.6;}
+  .kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;color:var(--scarlet);font-weight:700;}
+  .file-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .streak{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--gold);}
+  .tts-sentence{transition:background .2s;padding:1px 2px;border-radius:3px;}
+  .tts-active{background:#f4e2c0;box-shadow:0 0 0 1px var(--gold);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div>
+      <h1>FMF Officer Study Trainer</h1>
+      <p>Fleet Marine Force Warfare/Qualified Officer — Written &amp; Oral Board Prep</p>
+    </div>
+    <div class="badge-row">
+      <span class="pill">Written exam ≥ 80%</span>
+      <span class="pill">Oral board ≥ 80%</span>
+      <span class="pill">⅓ rote / ⅔ applied</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="flash">Flashcards</button>
+    <button data-tab="applied">Applied Discussion</button>
+    <button data-tab="podcast">Listen</button>
+    <button data-tab="board">Murder Board</button>
+    <button data-tab="progress">Progress &amp; Save</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard">
+    <div class="card">
+      <div class="kicker">Why this works</div>
+      <h2>Built on the evidence base for adult professional-exam prep</h2>
+      <p class="muted">
+        This tool mirrors the actual FMF PQS structure — 12 fundamentals sections (101–112), a written exam,
+        and an oral board that is ⅓ rote memory and ⅔ open-ended discussion, each requiring an 80% pass.
+        The three modes below map to the strongest evidence in learning science for exactly that structure:
+        <b>retrieval practice with spaced repetition</b> for rote content (flashcards), <b>interleaved applied
+        practice</b> for judgment/discussion content (Applied Discussion), and <b>simulation-based mastery
+        learning</b> for the board itself (Murder Board) — repeat attempts against a fixed 80% standard,
+        the same model used in medical education board prep.
+      </p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Your snapshot</h3>
+        <div class="grid2" style="grid-template-columns:1fr 1fr;">
+          <div class="stat"><div class="num" id="dashDue">0</div><div class="lbl">Cards due</div></div>
+          <div class="stat"><div class="num" id="dashXP">0</div><div class="lbl">XP earned</div></div>
+          <div class="stat"><div class="num" id="dashStreak">0</div><div class="lbl">Day streak</div></div>
+          <div class="stat"><div class="num" id="dashMastery">0%</div><div class="lbl">Overall mastery</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Jump in</h3>
+        <p class="muted" style="margin-top:0">Rote facts fade fastest without spaced review — start there.</p>
+        <div class="row">
+          <button class="btn" onclick="goTab('flash')">Review flashcards</button>
+          <button class="btn ghost" onclick="goTab('applied')">Practice discussion</button>
+          <button class="btn ghost" onclick="goTab('podcast')">Listen to a section</button>
+          <button class="btn scarlet" onclick="goTab('board')">Take a murder board</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Mastery by PQS section</h3>
+      <div id="dashSections"></div>
+    </div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section id="tab-flash" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <h2 style="margin-bottom:2px;">Spaced-Repetition Flashcards</h2>
+          <p class="muted" style="margin:0;">Rote memory content — the ⅓ of the oral board that's pure recall. Rate honestly; the schedule adapts.</p>
+        </div>
+        <select id="flashSection"></select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="board-progress" id="flashCounter"></div>
+      <div class="flash" id="flashCardBody">
+        <div class="tag" id="flashTag"></div>
+        <div class="q" id="flashQ"></div>
+        <div class="a" id="flashA" style="display:none"></div>
+      </div>
+      <div id="flashControls" style="margin-top:14px;">
+        <button class="btn" style="width:100%" onclick="revealFlash()">Show Answer</button>
+      </div>
+      <div class="rate-row" id="flashRateRow" style="display:none">
+        <button class="rate-btn rate-again" onclick="rateFlash(0)">Again</button>
+        <button class="rate-btn rate-hard" onclick="rateFlash(1)">Hard</button>
+        <button class="rate-btn rate-good" onclick="rateFlash(2)">Good</button>
+        <button class="rate-btn rate-easy" onclick="rateFlash(3)">Easy</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPLIED -->
+  <section id="tab-applied" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <h2 style="margin-bottom:2px;">Applied Discussion Practice</h2>
+          <p class="muted" style="margin:0;">Open-ended, judgment-based prompts drawn directly from the PQS and oral-board prep outline — the ⅔ of the board that's applied.</p>
+        </div>
+        <select id="appliedSection"></select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="board-progress" id="appliedCounter"></div>
+      <div class="flash" id="appliedBody">
+        <div class="tag" id="appliedTag"></div>
+        <div class="q" id="appliedQ"></div>
+      </div>
+      <textarea id="appliedAnswer" placeholder="Talk it out loud, then jot the key points you'd hit in front of the board..."></textarea>
+      <div class="self-rate" id="appliedRate">
+        <button data-v="0" onclick="rateApplied(0)">Missed it</button>
+        <button data-v="1" onclick="rateApplied(1)">Partial</button>
+        <button data-v="2" onclick="rateApplied(2)">Board-ready</button>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn ghost" onclick="nextApplied()">Next prompt →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PODCAST / LISTEN -->
+  <section id="tab-podcast" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <h2 style="margin-bottom:2px;">Study Guide Audio Companion</h2>
+          <p class="muted" style="margin:0;">Spoken-word walkthroughs of each PQS section, generated for hands-free review — commute, workout, or a break from the screen. Read by your browser's built-in voice.</p>
+        </div>
+        <select id="podcastSection"></select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="kicker" id="podcastKicker"></div>
+      <h3 id="podcastTitle" style="margin-top:2px;"></h3>
+      <div class="board-progress" id="podcastStatus">Ready.</div>
+      <div class="progress-bar" style="margin-bottom:14px;"><div id="podcastProgressBar" style="width:0%"></div></div>
+      <div class="row" style="margin-bottom:14px;">
+        <button class="btn scarlet" id="podcastPlayBtn" onclick="podcastPlayPause()">▶ Play</button>
+        <button class="btn ghost sm" onclick="podcastRestart()">⟲ Restart</button>
+        <button class="btn ghost sm" onclick="podcastStop()">■ Stop</button>
+      </div>
+      <div class="row" style="margin-bottom:14px;">
+        <label class="muted" style="display:flex;align-items:center;gap:6px;">Voice:
+          <select id="podcastVoice"></select>
+        </label>
+        <label class="muted" style="display:flex;align-items:center;gap:6px;">Speed:
+          <input type="range" id="podcastRate" min="0.75" max="1.5" step="0.05" value="1">
+          <span id="podcastRateLabel">1.0x</span>
+        </label>
+      </div>
+      <div class="flash" id="podcastTranscript" style="max-height:320px;overflow-y:auto;display:block;text-align:left;"></div>
+    </div>
+    <div class="card">
+      <p class="muted" style="margin:0;">
+        This is a supplementary summary written for this tool — it is <b>not</b> the official FMF Podcast series
+        referenced in the PQS and Study Guide (those transcripts live on MarineNet under the Naval Officer FMF
+        Community and are still required listening). Browser text-to-speech quality and available voices vary
+        by device; Chrome and Edge generally offer the most natural voices.
+      </p>
+    </div>
+  </section>
+
+  <!-- MURDER BOARD -->
+  <section id="tab-board" style="display:none">
+    <div class="card" id="boardSetup">
+      <h2>Murder Board</h2>
+      <p class="muted">Military slang for exactly this: a deliberately brutal practice board meant to prepare you
+        for the real thing. A mix of ⅓ rote-memory and ⅔ open-ended questions, scored to the same 80% standard
+        used by the actual FMFWO/FMFQO board. This is <b>deliberate practice</b> — take it repeatedly, closing
+        gaps each round, rather than once.</p>
+      <div class="row">
+        <label class="muted">Length:
+          <select id="boardLength">
+            <option value="9">9 questions (short)</option>
+            <option value="15" selected>15 questions (standard)</option>
+            <option value="24">24 questions (full)</option>
+          </select>
+        </label>
+        <button class="btn scarlet" onclick="startBoard()">Convene the murder board</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <label class="muted" style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="boardVoiceToggle" checked> Read questions aloud (board voice)
+        </label>
+        <label class="muted" style="display:flex;align-items:center;gap:6px;">Voice:
+          <select id="boardVoice"></select>
+        </label>
+      </div>
+      <p class="muted" id="boardVoiceNote" style="margin:6px 0 0;font-size:.85em;"></p>
+    </div>
+    <div class="card" id="boardRun" style="display:none">
+      <div class="rah-pop" id="boardRah" aria-hidden="true">Rah!</div>
+      <div class="board-progress" id="boardCounter"></div>
+      <div class="progress-bar" style="margin-bottom:14px;"><div id="boardProgressBar" style="width:0%"></div></div>
+      <div class="flash" id="boardCardBody">
+        <div class="tag" id="boardTag"></div>
+        <div class="q" id="boardQ"></div>
+        <div class="a" id="boardA" style="display:none"></div>
+      </div>
+      <div class="row" style="margin:10px 0;">
+        <button class="btn ghost sm" id="boardReplayBtn" onclick="replayBoardQuestion()" style="display:none">🔊 Replay question</button>
+      </div>
+      <div id="boardRevealRow" style="margin-top:14px;">
+        <button class="btn" style="width:100%" onclick="revealBoard()">Show model points / answer</button>
+      </div>
+      <div class="self-rate" id="boardRateRow" style="display:none">
+        <button data-v="0" onclick="scoreBoard(0)">Missed it</button>
+        <button data-v="1" onclick="scoreBoard(1)">Partial</button>
+        <button data-v="2" onclick="scoreBoard(2)">Nailed it</button>
+      </div>
+    </div>
+    <div class="card" id="boardResult" style="display:none">
+      <div class="result-banner" id="boardResultBanner"></div>
+      <p class="muted" id="boardResultDetail"></p>
+      <div class="row">
+        <button class="btn" onclick="resetBoard()">Convene another board</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="tab-progress" style="display:none">
+    <div class="card">
+      <h2>Progress</h2>
+      <div class="grid2" style="grid-template-columns:repeat(5,1fr);">
+        <div class="stat"><div class="num" id="progXP">0</div><div class="lbl">XP</div></div>
+        <div class="stat"><div class="num" id="progStreak">0</div><div class="lbl">Streak</div></div>
+        <div class="stat"><div class="num" id="progBoards">0</div><div class="lbl">Murder boards taken</div></div>
+        <div class="stat"><div class="num" id="progBest">0%</div><div class="lbl">Best board score</div></div>
+        <div class="stat"><div class="num" id="progPodcasts">0</div><div class="lbl">Sections listened</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Mastery by PQS section</h3>
+      <div id="progSections"></div>
+    </div>
+    <div class="card">
+      <div class="kicker">Important</div>
+      <h3>Save your progress</h3>
+      <p class="muted">This app keeps no server-side account and does not use browser storage — progress lives in this
+        browser tab only. <b>Export before you close the tab</b>, and re-import next time to pick up where you left off.</p>
+      <div class="file-row">
+        <button class="btn" onclick="exportProgress()">⬇ Export progress (.json)</button>
+        <label class="btn ghost" style="cursor:pointer;">
+          ⬆ Import progress
+          <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importProgress(event)">
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">
+    Content drawn from the FMF PQS (NAVEDTRA 43908-1D), FMF Study Guide, and the official FMFWO/QO Oral Board
+    prep outline in this project. Not a substitute for the full PQS, Study Guide, MCWP 6-10, and FMF Podcasts —
+    use this to drill, not to replace primary study.
+  </footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA — drawn from FMF PQS, FMF Study Guide, and the official
+   "Preparing for the FMFWO/QO Oral Board" outline in this project.
+----------------------------------------------------------------*/
+const SECTIONS = {
+  "101":"101 Esprit de Corps","102":"102 Admin & Org","103":"103 Aviation Combat Element",
+  "104":"104 Ground Combat Element","105":"105 Logistics Combat Element","106":"106 Command Element",
+  "107":"107 Operational Employment","108":"108 Power Projection","109":"109 Tactical Fundamentals",
+  "110":"110 Cyber Warfare","111":"111 Planning Process (MCPP)","112":"112 Force Design",
+  "LDR":"Leadership & Values (MCWP 6-10)"
+};
+
+const ROTE = [
+{s:"101",q:'What does "Semper Fidelis" mean, and when was it adopted as the motto?',a:'"Always Faithful." Adopted around 1883 — there has never been a mutiny among U.S. Marines.'},
+{s:"101",q:'What is the origin of the nickname "Leathernecks"?',a:'The leather stock/neckpiece worn 1775–1875 to protect the jugular from saber slashes and enforce erect bearing — commemorated by the standing collar on dress blues/whites.'},
+{s:"101",q:'What is the origin of "Devil Dogs"?',a:'At Belleau Wood (1918) German troops called the fierce-fighting 4th Marine Brigade "Teufelhunden" — "fierce fighting dogs," popularized as "Devil Dogs."'},
+{s:"101",q:'Who said "Uncommon valor was a common virtue," and about what battle?',a:'Admiral Chester Nimitz, describing Marines fighting on Iwo Jima; later applied to the whole Corps in WWII.'},
+{s:"101",q:'What does "First to Fight" mean?',a:"Marines have been in the forefront of every American war since the Corps' 1775 founding, with 300+ landings on foreign shores."},
+{s:"101",q:"When and where was the Marine Corps founded?",a:"10 November 1775, at Tun Tavern, Philadelphia, PA — the officially celebrated birthday."},
+{s:"101",q:"What are the three elements of the Eagle, Globe, and Anchor (EGA), and what does each represent?",a:"Anchor: fouled anchor, ties to the Navy. Globe: Western Hemisphere, borrowed from the Royal Marines' emblem. Eagle: U.S. national symbol, carries the \"Semper Fidelis\" streamer. Adopted 1868 under Commandant Zeilin."},
+{s:"101",q:'What does the scarlet "blood stripe" commemorate, and at what rank is it first worn?',a:"Popularly (not factually verified) said to commemorate blood shed at the Battle of Chapultepec (1847); first worn at the rank of Corporal."},
+{s:"101",q:"What is the origin of the Mameluke sword?",a:"Tradition holds it was presented to Lt. Presley O'Bannon by Prince Hamet Bey after O'Bannon's heroism at Derna, Tripoli (1805)."},
+{s:"101",q:"Which units still wear the French Fourragère, and why?",a:"5th and 6th Marines, for actions at Belleau Wood and Bouresches (1918) — the senior, first collective unit award earned by U.S. Marines."},
+{s:"101",q:"What is the Marine Corps birthday cake-cutting tradition?",a:"First piece to the oldest Marine present (honoring experience), passed to the youngest Marine present (passing tradition to the next generation)."},
+{s:"101",q:"Who were the Montford Point Marines?",a:"~20,000 African-American Marines (1942–1949) trained separately at Montford Point Camp, NC, who fought at Saipan, Iwo Jima, and Okinawa."},
+{s:"101",q:"What did the Navajo Code Talkers accomplish?",a:"Created an unbreakable code in their native language, cutting message encode/transmit/decode time from ~4 hours to ~2 minutes."},
+{s:"101",q:"Recite the enlisted ranks E-1 through E-9.",a:"Pvt (E1) → PFC (E2) → LCpl (E3) → Cpl (E4) → Sgt (E5) → SSgt (E6) → GySgt (E7) → MSgt/1stSgt (E8) → MGySgt/SgtMaj/SMMC (E9)."},
+{s:"101",q:"Recite the officer ranks O-1 through O-10.",a:"2ndLt → 1stLt → Capt → Maj → LtCol → Col → BGen → MajGen → LtGen → Gen."},
+{s:"101",q:"What pay grades are company grade, field grade, and general officer?",a:"Company grade: O-1–O-3. Field grade: O-4–O-6. General officer: O-7 and above."},
+{s:"101",q:'What is unique about the "Marine Gunner" title?',a:"A Chief Warrant Officer serving as infantry weapons officer carries the title \"Marine Gunner\" and wears a bursting-bomb insignia instead of the CWO insignia on the left collar."},
+{s:"102",q:"What are the four core elements of every MAGTF?",a:"Command Element (CE), Ground Combat Element (GCE), Aviation Combat Element (ACE), Logistics Combat Element (LCE)."},
+{s:"102",q:"What are the five types of MAGTF?",a:"MEF, MEF (Forward), MEB, MEU, and SPMAGTF."},
+{s:"102",q:"How large is a MEF, how long can it sustain itself, and who commands it?",a:"Up to ~40,000 Marines/Sailors; 60 days sustainment; commanded by a Lieutenant General."},
+{s:"102",q:"How large is a MEB, how is it resupplied, and who commands it?",a:"~16,000 Marines/Sailors; 30 days of supply via Maritime Prepositioning Force ships; commanded by a Brigadier General."},
+{s:"102",q:"Where are I, II, and III MEF headquartered?",a:"I MEF — Camp Pendleton, CA. II MEF — Camp Lejeune, NC. III MEF — Okinawa, Japan."},
+{s:"102",q:"Name the seven geographic Combatant Commands.",a:"AFRICOM, CENTCOM, EUCOM, INDOPACOM, NORTHCOM, SOUTHCOM, SPACECOM."},
+{s:"102",q:"Name the four functional Combatant Commands.",a:"CYBERCOM, SOCOM, STRATCOM, TRANSCOM."},
+{s:"103",q:"Who commands the ACE at the MEF, MEB, and MEU level, and what is each built around?",a:"MEF: one or more MAWs, commanded by a Major General. MEB: MAG(s), commanded by a Colonel. MEU: a reinforced VMM squadron, commanded by a Lieutenant Colonel."},
+{s:"103",q:"What is the difference between Close Air Support (CAS) and Deep Air Support (DAS)?",a:"Both fall under Offensive Air Support (OAS). CAS targets are close to friendly forces and require detailed integration with friendly fire/movement; DAS targets are farther out."},
+{s:"111",q:"State the six steps of the Marine Corps Planning Process (MCPP).",a:"1) Problem Framing 2) COA Development 3) COA War Game 4) COA Comparison and Decision 5) Orders Development 6) Transition."},
+{s:"111",q:"What are the three levels of MCPP's planning hierarchy?",a:"Conceptual planning, detailed planning, functional planning."},
+{s:"111",q:"Name the four planning processes covered in MCPP fundamentals.",a:"Troop Leading Steps, the Marine Corps Planning Process (MCPP), the Joint Planning Process, and the Rapid Response Planning Process (R2P2)."},
+{s:"111",q:'What is the purpose of "Problem Framing"?',a:"It identifies what the command must accomplish, when and where, and — most importantly — why, producing the commander's operational approach."},
+{s:"111",q:"What does R2P2 stand for, and who typically uses it?",a:"Rapid Response Planning Process — lets a MEU focus execution planning on the situation-unique aspects of a problem by leaning on standing SOPs."},
+{s:"111",q:'What is the purpose of the "Transition" step of MCPP?',a:"It shifts situational understanding from the small planning group to the larger group of executors through briefs, drills, and rehearsals — addressing the human element of the plan."},
+{s:"112",q:'What does MCDP 1 mean by abolishing a "zero defects" mentality?',a:"Don't stifle boldness or initiative through fear of punishment for honest errors of over-boldness — while still dealing severely with errors of inaction or timidity, which are not tolerated."},
+{s:"112",q:"According to MCDP 1, what two things build trust among leaders?",a:"Confidence (from demonstrated professional skill) and familiarity (from shared experience and a common professional philosophy)."},
+{s:"LDR",q:"What are the Marine Corps' core values?",a:"Honor, Courage, Commitment (MCWP 6-10, pp. 1-6 thru 1-8)."},
+{s:"102",q:"What is the difference between Direct Support and General Support?",a:"Direct Support answers directly to one specific supported unit's requests. General Support supports the force as a whole rather than one subdivision of it."},
+{s:"102",q:"Name the three Major Subordinate Commands (MSCs) under each standing MEF.",a:"I MEF: 1st MARDIV, 1st MLG, 3rd MAW. II MEF: 2nd MARDIV, 2nd MLG, 2nd MAW. III MEF: 3rd MARDIV, 3rd MLG, 1st MAW."},
+{s:"103",q:"What are the six functions of Marine Corps Aviation?",a:"Offensive Air Support (OAS), Antiair Warfare (AAW), Assault Support, Air Reconnaissance, Electronic Warfare (EW), and Control of Aircraft and Missiles."},
+{s:"103",q:"What are the three levels of aviation maintenance?",a:"Organizational (squadron, daily), Intermediate (MALS), and Depot (naval aviation industrial facilities)."},
+{s:"103",q:"Which MACCS agency is usually the first ashore, and what does it do?",a:"The Direct Air Support Center (DASC) — the principal MACCS air control agency responsible for directing air operations in direct support of ground forces."},
+{s:"104",q:"What is the role of the Ground Combat Element (GCE)?",a:"Every GCE is task-organized to give the MAGTF the ability to conduct ground combined arms maneuver. The GCE does not operate as an independent force."},
+{s:"104",q:"What forms when an infantry battalion is combined with artillery, engineers, and combat service support?",a:"A Battalion Landing Team (BLT)."},
+{s:"104",q:"Who commands the GCE at the MEF, MEB, and MEU level, and what is each built around?",a:"MEF: Major General (one or more MARDIVs). MEB: Brigadier General (reinforced infantry regiment). MEU: Colonel (a Battalion Landing Team)."},
+{s:"104",q:"What makes 3rd MARDIV's ground structure unique?",a:"It's built around Marine Littoral Regiments (MLRs) instead of infantry regiments, and it has no combat engineer, assault amphibian, or LAR battalions."},
+{s:"104",q:"What's the difference between an FSCC and an FFCC?",a:"The Fire Support Coordination Center (FSCC) provides fire support coordination within the GCE (located in the COC). The Force Fires Coordination Center (FFCC) provides fire support coordination for the whole MAGTF, including with higher, adjacent, and external commands."},
+{s:"105",q:"What are the six functional areas of Marine Corps logistics?",a:"Supply, Maintenance, Transportation, General Engineering, Health Services, and Services."},
+{s:"105",q:"Who commands the LCE at the MEF, MEB, and MEU level, and how many days of sustainment does each deploy with?",a:"MEF: Brigadier General, up to 60 days (one or more MLGs). MEB: Colonel, up to 30 days (task-organized around a CLR). MEU: Lieutenant Colonel, up to 15 days (one or more CLBs)."},
+{s:"105",q:"What's the difference between a single-numbered CLR (e.g., CLR 1) and a double-numbered CLR (e.g., CLR 25)?",a:"A single-numbered CLR gives direct tactical logistics support to the infantry division. A double-numbered CLR gives general logistics and maintenance support to the whole MEF and specified MAW organizations."},
+{s:"105",q:"Which command manages the Marine Corps' war reserve materiel requirement?",a:"Marine Corps Logistics Command (MARCORLOGCOM)."},
+{s:"106",q:"What three main staff elements make up the Command Element?",a:"Functional Staff, Special Staff, and Personal Staff."},
+{s:"106",q:"At what echelons do J-level, G-level, and S-level staffs exist?",a:"J-level: joint commands (two or more military branches). G-level: Division/Wing level. S-level: field-grade level (Major through Colonel)."},
+{s:"106",q:"Where are the three MEF Command Elements headquartered?",a:"I MEF CE — Camp Pendleton, CA. II MEF CE — Camp Lejeune, NC. III MEF CE — Camp Courtney, Okinawa, Japan."},
+{s:"106",q:"What five subordinate units make up the MEF Information Group (MIG)?",a:"MEF Support Battalion (MSB), Radio Battalion, Communication Battalion, Intelligence Battalion, and ANGLICO."},
+{s:"107",q:"What are the five tasks Marine Corps forces must be able to perform, per MCDP 1-0?",a:"Conduct military engagements, respond rapidly to crisis, project power, conduct littoral maneuver, and counter irregular threats."},
+{s:"107",q:"What are the six core competencies in Marine Corps Vision and Strategy 2025?",a:"Persistent forward naval engagement as the force in readiness; integrated combined arms in joint/multinational operations; forces for service aboard naval ships; joint forcible entry and amphibious doctrine; complex expeditionary operations in urban littorals; and leading joint/multinational operations while enabling interagency activities."},
+{s:"107",q:"What's the difference between a major operation and a campaign?",a:"A major operation is a series of coordinated tactical actions (battles, engagements, strikes). A campaign is a series of related major operations aimed at strategic and operational objectives, and is joint in nature."},
+{s:"107",q:"What are the four types of offensive operations?",a:"Movement to contact, attack, exploitation, and pursuit."},
+{s:"108",q:"What are the six principles of Operational Maneuver from the Sea (OMFTS)?",a:"Focuses on an operational objective; uses the sea as maneuver space; generates overwhelming tempo and momentum; pits strength against weakness; emphasizes intelligence, deception, and flexibility; integrates all organic, joint, and combined assets."},
+{s:"108",q:"What are the five types of amphibious operations?",a:"Demonstration, Raid, Assault, Withdrawal, and Feint."},
+{s:"108",q:"What are the five phases of an amphibious operation?",a:"Planning, Embarkation, Rehearsal, Movement, and Action."},
+{s:"108",q:"What is the standard ship composition of an Amphibious Ready Group (ARG)?",a:"Typically three amphibious warfare ships: an LHA or LHD, an LPD, and an LSD."},
+{s:"108",q:"What are the three amphibious operational environments?",a:"Permissive, Uncertain, and Hostile."},
+{s:"108",q:"What are the three methods of employing an ARG/MEU?",a:"Aggregated, Disaggregated, and Distributed."},
+{s:"108",q:"What are the five phases of MPF operations?",a:"Planning, Marshalling, Movement, Arrival and Assembly, and Reconstitution."},
+{s:"109",q:"What do the four \"Roles\" of tactical medical care represent?",a:"Role 1: unit-level self-aid/buddy-aid at the point of injury. Role 2: forward resuscitative care. Role 3: theater hospital (comprehensive surgical/specialty care). Role 4: definitive care, usually stateside."},
+{s:"109",q:"What do the five \"Levels\" of medical care represent?",a:"Level I: immediate first aid at the front line. Level II: surgical resuscitation and emergency care. Level III: advanced medical/surgical/trauma care — the highest level available in the combat zone. Level IV: definitive surgical management outside the combat zone. Level V: final evacuation to a major U.S. military medical center."},
+{s:"109",q:"What does SMEAC stand for?",a:"Situation, Mission, Execution, Administration, Command — the five-paragraph order."},
+{s:"109",q:"What does SALUTE stand for?",a:"Size, Activity, Location, Unit, Time, Equipment."},
+{s:"109",q:"What's the difference between Field-Level and Depot-Level maintenance?",a:"Field-level maintenance (organizational + intermediate tasks) is performed by Marine Corps crews/units. Depot-level maintenance involves rebuild/overhaul beyond field capability, done by naval aviation industrial facilities or as directed by DC I&L."},
+{s:"110",q:"What are the three lines of operation for USCYBERCOM?",a:"Secure, operate, and defend the DODIN; defend the nation from attack in cyberspace; and provide cyberspace support as required to Combatant Commanders."},
+{s:"110",q:"What's the difference between DCO-IDM and DCO-RA?",a:"DCO-Internal Defensive Measures occur within the defended network (internal threat hunting and countermeasures). DCO-Response Actions occur outside the defended network and can potentially escalate to use of force."},
+{s:"110",q:"What are the five categories of Offensive Cyberspace Operations?",a:"Deny, Degrade, Disrupt, Destroy, and Manipulate."},
+{s:"110",q:"What does DACO stand for, and who holds it?",a:"Directive Authority for Cyberspace Operations — held by Commander, USCYBERCOM, and delegated to JFHQ-DODIN for global DODIN operations and DCO-IDM."},
+{s:"111",q:"What are the five characteristics required of a developed COA?",a:"Suitable, Feasible, Acceptable, Distinguishable, and Complete."},
+{s:"111",q:"What's the difference between a PIR and an FFIR?",a:"Priority Intelligence Requirements (PIRs) focus on the adversary and the operational environment, tied to the commander's decision points. Friendly Force Information Requirements (FFIRs) focus on the status of the friendly force. Both become CCIRs once the commander approves them."},
+{s:"111",q:"What's the difference between deliberate planning and rapid planning?",a:"Deliberate planning happens well in advance, with time to spare, and relies on assumptions about the future. Rapid planning happens under time pressure and is based on current conditions rather than assumptions."},
+{s:"112",q:"What three Force Design concepts, together with EABO, describe how the Marine Corps operates inside an adversary's weapons engagement zone?",a:"Distributed Maritime Operations (DMO), Littoral Operations in a Contested Environment (LOCE), and Stand-In Forces (SiF)."},
+{s:"112",q:"What does EABO stand for, and what is its purpose?",a:"Expeditionary Advanced Base Operations — employing forces from austere, temporary locations ashore or inshore in a contested maritime area to conduct sea denial, support sea control, or enable fleet sustainment."}
+];
+
+const APPLIED = [
+{s:"101",ref:"PQS 101.1",q:"Describe the origin and meaning of: First to Fight, Leathernecks, Devil Dogs, Esprit de Corps, Uncommon Valor was a Common Virtue, and Semper Fidelis."},
+{s:"101",ref:"Oral Board Prep / Study Guide 101-6 thru 101-8",q:"Select a significant battle in Marine Corps history and explain the lessons learned. How are they still relevant and applied today?"},
+{s:"101",ref:"Oral Board Prep / Study Guide 101-8 thru 101-9",q:"Select a prominent Marine from history and analyze their contributions and legacy. How are they remembered today?"},
+{s:"101",ref:"Podcast 301, Topics 1 & 4; MCWP 6-10 Naval Character",q:"What is the historical reason for the intertwined cultures of the Marine Corps and Navy, and how does this explain the absence of Marine Corps-specific Chaplains and Doctors?"},
+{s:"101",ref:"MCWP 6-10, pp. 1-6 thru 1-8",q:"Recite the Marine Corps Motto and Core Values, and discuss their meaning. How do you demonstrate them in your leadership?"},
+{s:"102",ref:"PQS 102, 000.3",q:"Discuss the Marine Air-Ground Task Force (MAGTF): purpose, organizational structure, approximate size, and days of sustainment."},
+{s:"102",ref:"PQS 102, 000.4",q:"Explain your Operational, Service, and Administrative chains of command, from your unit up through the Secretary of Defense."},
+{s:"102",ref:"PQS 102, 000.5",q:"Define supported and supporting relationships."},
+{s:"102",ref:"PQS 102, 000.6",q:"Discuss the MAGTF in relation to COCOM, ADCON, OPCON, TACON, DIRLAUTH, DS, and GS — give an example of each."},
+{s:"102",ref:"PQS 102, 000.9",q:"Explain the Defense Readiness Reporting System (DRRS) and how it applies to your unit."},
+{s:"103",ref:"PQS 103, 000.3",q:"Describe a MAW, MAG, MWSG, and MACG: mission, composition, and how they differ."},
+{s:"103",ref:"PQS 103, 000.8",q:"Identify the ACE of a MEF, MEB, and MEU, comparing size, leadership, composition, and support relationships."},
+{s:"104",ref:"PQS 104.1",q:"Describe the role of the Ground Combat Element (GCE)."},
+{s:"104",ref:"PQS 104, 000.2",q:"Describe a Marine Division: mission, composition, organizational structure, and differences among the 1st–4th MARDIV."},
+{s:"104",ref:"PQS 104, 000.5",q:"Describe Fire Support Coordination (FSC): purpose, tasks, and who provides it for the MAGTF."},
+{s:"104",ref:"PQS 104, 000.7",q:"Explain Naval Surface Fire Support and describe the ship classes that provide it (CG, DDG, FFG)."},
+{s:"105",ref:"PQS 105.1",q:"Describe the role of the Logistics Combat Element (LCE)."},
+{s:"105",ref:"PQS 105, 000.2",q:"Describe a Marine Logistics Group: mission, composition, and differences among the 1st–4th MLG."},
+{s:"105",ref:"PQS 105, 000.4",q:"Compare a Combat Logistics Regiment, Battalion, and Company."},
+{s:"105",ref:"PQS 105, 000.6",q:"Describe War Reserve Stocks: purpose and who provides them."},
+{s:"106",ref:"PQS 106.1",q:"Describe the role of the Command Element (CE)."},
+{s:"106",ref:"PQS 106, 000.2-000.3",q:"Define J, G, and S-level staffs, and describe the Functional, Special, and Personal Staff sections."},
+{s:"106",ref:"PQS 106, 000.4",q:"Describe the roles of Special Staff Officers: IG, Security Manager, SJA, Surgeon, Chaplain, SARC, DRC."},
+{s:"106",ref:"PQS 106, 000.7-000.8",q:"Explain the Table of Organization (T/O) and Table of Equipment (T/E) and how each applies to your unit."},
+{s:"107",ref:"PQS 107, 000.2; MCDP 1-0",q:"Identify the five tasks Marine Corps forces must be able to perform."},
+{s:"107",ref:"PQS 107, 000.3",q:"Explain the six core competencies in Marine Corps Vision and Strategy 2025."},
+{s:"107",ref:"PQS 107, 000.5",q:"Compare and contrast Military Engagement, Security Cooperation, and Deterrence."},
+{s:"107",ref:"PQS 107, 000.7",q:"Compare and contrast Crisis Operations and Contingency Operations."},
+{s:"108",ref:"PQS 108.1",q:"Describe the principles of Operational Maneuver from the Sea (OMFTS)."},
+{s:"108",ref:"PQS 108, 000.2",q:"Describe Ship-to-Objective Maneuver (STOM) doctrine."},
+{s:"108",ref:"PQS 108, 000.4",q:"Explain the relationship between the Commander Amphibious Task Force (CATF) and Commander Landing Force (CLF)."},
+{s:"108",ref:"PQS 108, 000.7",q:"Define L-hour, H-hour, D-day, and Line of Departure."},
+{s:"108",ref:"PQS 108, 000.8",q:"Describe the purpose of a Landing Force Support Party and its components."},
+{s:"108",ref:"PQS 108, 000.14-000.15",q:"Describe the purpose and phases of Maritime Prepositioning Force (MPF) operations."},
+{s:"109",ref:"PQS 109.1",q:"State the six functional areas of tactical logistics."},
+{s:"109",ref:"PQS 109, 000.10",q:"Describe the components of a five-paragraph order (SMEAC)."},
+{s:"109",ref:"PQS 109, 000.11",q:"Describe the purpose of a SALUTE report."},
+{s:"110",ref:"PQS 110.1",q:"Define Cyberspace, the Information Environment, and Cyberspace Operations."},
+{s:"110",ref:"PQS 110, 000.2",q:"Describe the three layers of cyberspace: Physical Network, Logical Network, and Cyber-Persona."},
+{s:"110",ref:"PQS 110, 000.7",q:"Explain DODIN Operations, Defensive Cyberspace Operations (DCO), and Offensive Cyberspace Operations (OCO)."},
+{s:"110",ref:"PQS 110, 000.9",q:"Define the five categories of Offensive Cyberspace Operations: Deny, Degrade, Disrupt, Destroy, Manipulate."},
+{s:"111",ref:"PQS 111, 000.10",q:"Explain the eight elements of COA Wargaming."},
+{s:"111",ref:"PQS 111, 000.14",q:"Describe the role of the Operational Planning Team (OPT) and the Crisis Action Team (CAT)."},
+{s:"111",ref:"PQS 111, 000.16",q:"Define Center of Gravity (COG) and Commander's Critical Information Requirements (CCIRs)."},
+{s:"111",ref:"PQS 111, 000.19",q:"Explain how Health Service Support and Religious Ministry fit within the MCPP."},
+{s:"112",ref:"PQS 112.1",q:"Describe the premise for Force Design as outlined in MCDP 1."},
+{s:"112",ref:"PQS 112, 000.4",q:"Define Distributed Maritime Operations, Expeditionary Advanced Base Operations, Littoral Operations in a Contested Environment, and Stand-In Forces, and relate them to Force Design."},
+{s:"LDR",ref:"Oral Board Prep, Leadership theme",q:"How does your display of integrity impact those you lead?"},
+{s:"LDR",ref:"Oral Board Prep, Leadership theme",q:"What specific actions do you consistently perform to project professionalism at the standard expected of an FMF-qualified officer?"},
+{s:"LDR",ref:"Oral Board Prep",q:"Why is it important for the Marine Corps to have standardized planning processes, especially against a near-peer adversary?"},
+{s:"LDR",ref:"Oral Board Prep; Podcasts 304/307",q:"How does the ability to rapidly task-organize contribute to the Marine Corps' reputation as a \"first to fight\" force, and what does that mean for joint operations?"},
+{s:"LDR",ref:"MCWP 6-10, pp. 1-8 thru 1-11",q:"Discuss the Expeditionary Mindset and how it shapes Marine Corps culture."},
+{s:"LDR",ref:"MCWP 6-10, pp. 2-11, 2-23 thru 2-25",q:"Discuss Moral Courage and Self-Discipline as Marine Corps leadership traits."},
+{s:"LDR",ref:"MCWP 6-10, pp. 3-1 thru 3-2",q:"Discuss Friction in Battle and in Garrison, and how leaders overcome it."},
+{s:"LDR",ref:"MCWP 6-10, pp. 3-9 thru 3-16",q:"Discuss Adaptability, Innovation, and Decentralized Leadership."},
+{s:"LDR",ref:"MCWP 6-10, pp. 3-22 thru 3-24",q:"Discuss Building Trust and Allowing for Failure as a leadership principle."},
+{s:"LDR",ref:"MCTP 6-10B, pp. 18-1 thru 18-5",q:"Discuss the four common leadership styles."},
+{s:"LDR",ref:"MCO 1020.34H, 1004",q:"Discuss practical, tactical ways officers show respect for the Corps through uniform standards."},
+{s:"104",ref:"Study Guide 104.3i",q:"Explain the mission, composition, and functional tasks of a Marine Division's Reconnaissance Battalion."},
+{s:"104",ref:"Study Guide 104.2",q:"Describe the composition and unique structure of 3rd MARDIV's Marine Littoral Regiments (LCT, LAAB, LLB)."},
+{s:"104",ref:"Study Guide 104.7",q:"Walk through the phases of Naval Surface Fire Support during an amphibious assault, from final preparation of the landing area through close and deep support fires."},
+{s:"105",ref:"Study Guide 105.3d-e",q:"Describe the mission and composition of a Marine Logistics Group's Medical and Dental Battalions, and how they support the MEF."},
+{s:"105",ref:"Study Guide 105.4",q:"Explain the difference between a Combat Logistics Regiment, Battalion, and Company, and how they nest together to support the GCE."},
+{s:"106",ref:"PQS 106, 000.7-000.8",q:"Discuss the Table of Organization (T/O) and Table of Equipment (T/E), and explain how they shape what your unit is authorized to have."},
+{s:"106",ref:"Study Guide 106.10",q:"Explain the mission of the MEF Information Group (MIG) and how it supports the MAGTF commander's operations in the information environment."},
+{s:"107",ref:"PQS 107, 000.8",q:"Describe Consequence Management, Foreign Humanitarian Assistance, and Noncombatant Evacuation Operations (NEOs), and explain how they differ."},
+{s:"107",ref:"Study Guide 107.8d",q:"Compare a strike and a raid, and give a historical Marine Corps example of each."},
+{s:"107",ref:"Study Guide 107.10b",q:"Discuss the difference between area defense, mobile defense, and retrograde operations."},
+{s:"108",ref:"Study Guide 108.2",q:"Explain the relationship between Ship-to-Objective Maneuver (STOM) and traditional ship-to-shore movement."},
+{s:"108",ref:"Study Guide 108.8",q:"Describe the five elements of the Landing Force Support Party and how they move personnel and equipment across the beach."},
+{s:"108",ref:"Study Guide 108.14",q:"Explain the purpose of the Maritime Prepositioning Force (MPF) and how a fly-in echelon links up with prepositioned equipment."},
+{s:"109",ref:"Study Guide 109.8",q:"Explain the difference between the \"Level\" and \"Role\" systems of tactical medical care, and where Role 1 and Role 2 care actually happen on the battlefield."},
+{s:"109",ref:"PQS 109.1",q:"Describe the six functional areas of tactical logistics and give an example task for each."},
+{s:"109",ref:"Study Guide 109.9",q:"Walk through the criteria for selecting a helicopter landing zone."},
+{s:"110",ref:"Study Guide 110.7",q:"Explain the difference between Defensive Cyberspace Operations (DCO) and Offensive Cyberspace Operations (OCO), including their sub-types."},
+{s:"110",ref:"Study Guide 110.11",q:"Describe the mission of MARFORCYBERCOM, MCCOG, and MCCYWG, and how they relate to each other."},
+{s:"111",ref:"Study Guide 111.13",q:"Walk through the four steps of Transition and explain why it 'addresses the human element' of a plan."},
+{s:"111",ref:"PQS 111, 000.19",q:"Explain how Health Service Support and Religious Ministry integrate into the Marine Corps Planning Process, including which annex each falls under."},
+{s:"112",ref:"Study Guide 112.4a",q:"Define Distributed Maritime Operations and explain how it counters an adversary's anti-access/area-denial (A2/AD) systems."},
+{s:"112",ref:"PQS 112, 000.11",q:"Discuss how Talent Management 2030 efforts support Force Design objectives."}
+];
+
+const PODCASTS = {
+"101":{title:"Why \"Semper Fidelis\" Isn't Just a Slogan",
+text:"Let's talk about where Marine Corps identity actually comes from, because on the oral board, roughly a third of what you'll get is pure rote memory tied to this material. Start with the motto: Semper Fidelis, always faithful, adopted around 1883. The claim behind it is a real one — there has never been a mutiny among U.S. Marines. That's not folklore, that's the standard the Corps holds itself to. Now, the nicknames. Leathernecks goes back to a leather neckpiece worn from 1775 to 1875, meant to protect the jugular from saber slashes and to force Marines to keep their chin up, literally, for military bearing. You still see it today in the standing collar on dress blues and dress whites. Devil Dogs comes from Belleau Wood in 1918, where German troops, stunned by how hard the 4th Marine Brigade fought through supposedly impenetrable woods, called them Teufelhunden — fierce fighting dogs. And Uncommon Valor Was a Common Virtue is Admiral Nimitz's line about the Marines on Iwo Jima, later applied to the whole Corps in World War Two. The emblem matters too. The Eagle, Globe, and Anchor was adopted in 1868 under Commandant Zeilin. The anchor ties the Corps to the Navy. The globe was borrowed from the Royal Marines but flipped to show the Western Hemisphere. And the eagle carries that Semper Fidelis streamer in its beak. Don't sleep on ranks, either — you need to be able to recite enlisted E-1 through E-9 and officer O-1 through O-10 cold, in order, without hesitating. And know your history: the Montford Point Marines, nearly twenty thousand African-American Marines trained separately from 1942 to 1949 who fought at Saipan, Iwo Jima, and Okinawa. And the Navajo Code Talkers, who built a code from scratch that cut message transmission time from four hours down to about two minutes. This is the material most candidates underrate, because it feels like trivia. It isn't. It's a third of your board."},
+"102":{title:"How the Marine Corps Is Actually Organized",
+text:"If section one was about identity, section 102 is about structure — and this is the material that trips people up because there's a lot of interlocking pieces. Start with the MAGTF: every Marine Air-Ground Task Force, no matter the size, has the same four core elements — Command Element, Ground Combat Element, Aviation Combat Element, and Logistics Combat Element. That's true whether you're talking about a small Special Purpose MAGTF or a forty-thousand-person Marine Expeditionary Force. Speaking of size, there are five types of MAGTF: the MEF, the MEF Forward, the MEB, the MEU, and the SPMAGTF. A MEF is the big one — up to forty thousand Marines and Sailors, sixty days of sustainment, commanded by a Lieutenant General. There are three standing MEFs: I MEF at Camp Pendleton, California; II MEF at Camp Lejeune, North Carolina; and III MEF in Okinawa, Japan. Step down to a MEB — about sixteen thousand people, thirty days of supply via Maritime Prepositioning Force ships, commanded by a Brigadier General. And a MEU is smaller still, commanded by a Colonel. Now the chain of command, because this is a classic oral board question. There are two chains: the operational chain runs from the President through the Secretary of Defense to the Combatant Commanders. The service chain runs from the President through the Secretary of Defense, through the Secretary of the Navy, to the Commandant of the Marine Corps. Know the difference between COCOM, ADCON, OPCON, TACON, and DIRLAUTH — these show up constantly, and the board loves asking you to define one and then give a real-world example. Last thing: memorize your Combatant Commands. Seven geographic — Africa, Central, European, Indo-Pacific, Northern, Southern, and Space. Four functional — Cyber, Special Operations, Strategic, and Transportation. That's eleven commands, cold."},
+"103":{title:"What Marine Aviation Actually Does for the MAGTF",
+text:"Aviation is a lot more than airplanes taking off and landing — the Aviation Combat Element exists to give the MAGTF commander a complete spectrum of operational capability, and it does that through six functions. Offensive Air Support, which splits into Close Air Support against targets near friendly troops, and Deep Air Support against targets farther out. Antiair Warfare, both offensive and defensive. Assault Support, which is how Marines and cargo actually get moved around the battlefield. Air Reconnaissance. Electronic Warfare. And Control of Aircraft and Missiles, which ties the other five together through the Marine Air Command and Control System. Here's a structural fact worth knowing cold: who commands the ACE at each MAGTF size. At the MEF level, it's one or more Marine Aircraft Wings, commanded by a Major General. At the MEB level, it's a Marine Aircraft Group or task-organized MAG, commanded by a Colonel. At the MEU level, it's a reinforced Medium Tilt-Rotor Squadron, commanded by a Lieutenant Colonel. And don't forget maintenance levels, because this comes up constantly across multiple PQS sections, not just aviation: organizational maintenance happens daily at the squadron level, intermediate maintenance happens at MALS, and depot-level maintenance — the full rebuild — happens at naval aviation industrial facilities like Boeing. If you remember nothing else from this section, remember this: aviation doesn't operate independently any more than the ground combat element does. Everything is task-organized to support the MAGTF commander's mission."},
+"104":{title:"The Ground Combat Element, Boots on the Ground",
+text:"The Ground Combat Element is what most people picture when they think Marine Corps — but structurally, it's just like every other element: task-organized, and it never operates independently. At the MEF level, the GCE is one or more Marine Divisions, commanded by a Major General. At the MEB level, it's a reinforced infantry regiment, commanded by a Brigadier General. At the MEU level, it's a single infantry battalion reinforced with artillery, engineers, and other attachments — and once you add those attachments, it gets a name: the Battalion Landing Team, or BLT. Here's a wrinkle worth knowing: 3rd Marine Division doesn't look like the others. Instead of infantry regiments, it's built around Marine Littoral Regiments — the 3rd and 12th MLR — and it doesn't have a combat engineer battalion, an assault amphibian battalion, or a light armored reconnaissance battalion the way 1st, 2nd, and 4th Division do. Each MLR breaks down into a Littoral Combat Team, a Littoral Anti-Air Battalion, and a Littoral Logistics Battalion. That's Force Design 2030 showing up directly in the organization chart. On fire support: know the difference between the Fire Support Coordination Center, which coordinates fires within the GCE at the division level, and the Force Fires Coordination Center, which coordinates fires for the entire MAGTF, including with higher and adjacent commands. And know your Naval Surface Fire Support ships — cruisers, destroyers, and the new Constellation-class frigates — because NSFS timing during an amphibious assault, from final prep of the landing area through close support to deep support fires, is a favorite discussion topic."},
+"105":{title:"Logistics: The Force Multiplier Nobody Talks About Enough",
+text:"There's a line quoted constantly in Marine Corps circles — amateurs talk tactics, but professionals talk logistics — and section 105 is where you prove you understand why. The Logistics Combat Element's mission is to generate MAGTFs that are rapidly deployable, self-reliant, self-sustaining, and able to reconstitute quickly. It breaks down into six functional areas: supply, maintenance, transportation, general engineering, health services, and services. Sizing and command mirror what you already know from the other elements. At the MEF level, the LCE is one or more Marine Logistics Groups, commanded by a Brigadier General, with up to sixty days of sustainment. At the MEB level, it's task-organized around a Combat Logistics Regiment, commanded by a Colonel, thirty days. At the MEU level, one or more Combat Logistics Battalions, commanded by a Lieutenant Colonel, fifteen days. Here's a distinction that trips people up: single-numbered Combat Logistics Regiments, like CLR-1, give direct tactical logistics support to the infantry division. Double-numbered CLRs, like CLR-25, give general logistics and maintenance support to the whole MEF. Same acronym, different job. And since a lot of this platform's audience are medical and dental officers specifically — the Medical Battalion and Dental Battalion sit inside the MLG. Medical battalion provides direct and general medical support to the MEF through surgical companies doing initial trauma resuscitation, temporary casualty holding, and evacuation support. Dental battalion keeps the MEF in an acceptable state of dental readiness and assists medical in treating casualties. That's you. That's where you sit in this structure."},
+"106":{title:"The Command Element: Who's Actually Running the Show",
+text:"The Command Element is the MAGTF headquarters — it's what gives every other element the command and control it needs to plan, execute, and assess operations. It breaks into three staff groups: Functional Staff, Special Staff, and Personal Staff. Functional staff is what most people mean when they say the staff — sections like G-1 for personnel, G-2 for intelligence, G-3 for operations, G-4 for logistics, G-5 for plans, G-6 for communications. Know your levels: J-staffs exist at joint commands, G-staffs at Division and Wing level, S-staffs at the field-grade level, Major through Colonel. Special staff officers are where a lot of Navy officers actually plug in. The Surgeon advises the commander on health services. The Chaplain addresses the moral, spiritual, and religious wellbeing of the command. Both can serve as special staff officers directly, or fall under a battalion, company, or detachment while dual-hatting in that advisory role. Personal staff is smaller — the Sergeant Major, the aide-de-camp, personal secretaries — people directly responsible to the commander, not routed through the general staff. One more structural piece worth knowing: the MEF Information Group, or MIG. It brings together the MEF Support Battalion, Radio Battalion, Communication Battalion, Intelligence Battalion, and ANGLICO — the Air Naval Gunfire Liaison Company — all under one roof to fight in the information environment alongside the traditional combat elements. And know your MEF Command Element locations: I MEF at Camp Pendleton, II MEF at Camp Lejeune, III MEF at Camp Courtney, Okinawa."},
+"107":{title:"What the Marine Corps Is Actually For",
+text:"Section 107 answers a question that sounds simple but isn't: what is the Marine Corps legally and doctrinally supposed to do? Title 10 of the U.S. Code lays out the baseline — organize at least three divisions and three aircraft wings, provide Fleet Marine Forces for the seizure and defense of advanced naval bases, and develop amphibious doctrine in coordination with the Army and Air Force. MCDP 1-0 boils that down to five tasks: conduct military engagements, respond rapidly to crisis, project power, conduct littoral maneuver, and counter irregular threats. And Marine Corps Vision and Strategy 2025 gives you six core competencies — persistent forward naval engagement, integrated combined arms in joint operations, service aboard naval ships, joint forcible entry and amphibious doctrine, complex expeditionary operations in urban littorals, and leading joint and multinational operations. This section is also where the historical case-study questions live. Know the difference between a strike — an attack for political purposes, like Operation Praying Mantis destroying Iranian oil platforms in 1988 — and a raid, a temporary seizure that ends in a planned withdrawal, like the 13th MEU's raids during Desert Storm. Know your crisis-response categories: consequence management happens on American soil, foreign humanitarian assistance happens overseas, and noncombatant evacuation operations move American citizens and designated others out of danger fast, under uncertainty, with the Department of State in the lead. And know your major operations types — offensive operations break down into movement to contact, attack, exploitation, and pursuit. Defensive operations break into area defense, mobile defense, and retrograde. These aren't just vocabulary. The board wants you to connect the term to a real operation and explain why the Marine Corps chose that approach."},
+"108":{title:"From Ship to Shore: How the Marine Corps Gets There",
+text:"This is the section that makes the Marine Corps different from every other service, and the oral board knows it. Operational Maneuver from the Sea, OMFTS, is the doctrine — using the sea itself as maneuver space, aimed not at some enemy's beach but at their center of gravity, the thing they can't survive losing. It runs on six principles: focus on an operational objective, use the sea as maneuver space, generate overwhelming tempo, pit strength against weakness, emphasize intelligence and deception, and integrate every asset you've got. Ship-to-Objective Maneuver, STOM, takes that idea and makes it concrete — instead of seizing a beach and building up combat power there, you push combat units directly to a decisive objective inland, in fighting formation, engaging the enemy only when it's necessary to keep moving. Know your five types of amphibious operations: demonstration, raid, assault, withdrawal, and feint. Know the five phases every amphibious operation goes through: planning, embarkation, rehearsal, movement, and action. And know your key terms — L-hour for the first helicopter touchdown, H-hour for the first landing craft on the beach, D-day for the day the operation kicks off. The Amphibious Ready Group, typically three ships — an LHA or LHD, an LPD, and an LSD — carries the Landing Force ashore. And the Maritime Prepositioning Force is the other half of Marine Corps rapid response: equipment and thirty days of supplies sitting pre-loaded on ships near likely trouble spots, ready for a fly-in echelon to link up with within days, not weeks. That combination — amphibious assault plus prepositioned equipment — is what lets the Marine Corps claim it can be first to fight."},
+"109":{title:"The Details That Keep a Unit Alive and Functioning",
+text:"Section 109 is the grab-bag of practical, ground-level knowledge — and for medical and religious ministry officers specifically, this is one of the most directly relevant sections in the whole PQS. Start with the six functional areas of tactical logistics: supply, maintenance, transportation, general engineering, health services, and services. Then get precise about medical care, because the board will test this exactly: there are five Levels of care — Level One is immediate first aid at the front line, Level Two is surgical resuscitation and emergency care, Level Three is the highest level of care available in the actual combat zone, Level Four is definitive surgical management outside the combat zone, and Level Five is final evacuation to a major stateside military medical center. Separately, there are four Roles — Role One is unit-level self-aid and buddy-aid, Role Two is forward resuscitative care, Role Three is a full theater hospital, and Role Four is definitive care. Levels and Roles overlap in concept but aren't the same system, and mixing them up on the board is a common, avoidable mistake. Beyond medical, know your five-paragraph order — Situation, Mission, Execution, Administration, Command, remembered as SMEAC — and your SALUTE report format for reporting enemy activity: Size, Activity, Location, Unit, Time, Equipment. And know the difference between field-level maintenance, performed by the using unit itself, and depot-level maintenance, which is a full rebuild done at an industrial facility or by direction of the Deputy Commandant for Installations and Logistics. Small distinctions like this are exactly what rote questions are built from."},
+"110":{title:"The Newest Fundamental: Cyberspace Operations",
+text:"Cyberspace operations is the newest of the twelve fundamentals sections, added because the Marine Corps can't function without freedom of action in cyberspace any more than it can without freedom of action at sea. Start with the three layers of cyberspace: the physical network — the actual hardware and cables; the logical network — data flows and addressing that don't map to any one physical location; and the cyber-persona layer — the digital identities and accounts, human or automated, operating across it all. USCYBERCOM runs three lines of operation: secure, operate, and defend the DODIN; defend the nation from attack in cyberspace; and provide cyberspace support to Combatant Commanders. Below that sit three mission forces worth knowing apart: the Cyber Protection Force defends the DODIN internally, the Cyber National Mission Force defends against threats to the nation, and the Cyber Combat Mission Force supports Combatant Commander missions directly. On operations, keep Defensive and Offensive straight. Defensive Cyberspace Operations splits into Internal Defensive Measures, which happen inside your own network, and Response Actions, which happen outside it and can escalate all the way to a use-of-force decision. Offensive Cyberspace Operations breaks into five categories, worth memorizing as a set: deny, degrade, disrupt, destroy, and manipulate. Within the Marine Corps specifically, know your three commands: MARFORCYBERCOM advises USCYBERCOM and runs full-spectrum operations; MCCOG runs the Marine Corps Enterprise Network day to day; and MCCYWG trains and certifies the cyber mission force teams themselves. It's a lot of acronyms, but the board isn't just testing memorization here — they want you to explain why a service built around physical maneuver now has to fight for terrain that doesn't physically exist."},
+"111":{title:"The Marine Corps Planning Process, Six Steps You Cannot Skip",
+text:"If there's one piece of rote knowledge that shows up on every single oral board without fail, it's this: the six steps of the Marine Corps Planning Process. Problem Framing. Course of Action Development. COA War Game. COA Comparison and Decision. Orders Development. Transition. Say it until it's automatic. But don't stop at the list — know what each step actually does. Problem Framing identifies what the command must accomplish and, critically, why — the purpose behind the operation. Nothing downstream can fix a problem that's misunderstood at this stage. COA Development generates real options aligned with the commander's operational approach. The War Game stress-tests those options against a thinking enemy, in three-step turns: friendly action, enemy reaction, friendly counteraction. Comparison and Decision is where the commander actually chooses. Orders Development translates that decision into oral, written, and graphic guidance. And Transition — often underrated — is where the plan moves from the small group who wrote it to the much larger group who has to execute it, through briefs, drills, and rehearsals. A few supporting concepts worth locking in: a good COA has to be suitable, feasible, acceptable, distinguishable, and complete. Center of Gravity is the source of strength an enemy can't function without. Commander's Critical Information Requirements split into Priority Intelligence Requirements, about the adversary, and Friendly Force Information Requirements, about your own force. And specifically for this audience: health service support and religious ministry both have a defined seat at the table in MCPP, participating in problem framing, joining the Operational Planning Team, and each owning a specific annex of the order — health services in Annex Q, religious ministry in Annex E, Appendix 6. You are not an afterthought in this process. You're written into it."},
+"112":{title:"Why the Marine Corps Is Changing, and What It's Changing Into",
+text:"MCDP 1 opens with a line worth internalizing: war is both timeless and ever-changing. Force Design is the Marine Corps' answer to that — an ongoing effort to make sure the Corps doesn't become outdated, stagnant, or defeated as the character of warfare shifts. The current push, roughly 2010 through 2030, responds to the return of peer competitors who can contest air, maritime, and information superiority in ways the Marine Corps hasn't had to plan around since before the end of the Cold War. Four concepts anchor this shift, and they work together. Distributed Maritime Operations counters an adversary's ability to detect and target concentrated naval forces by spreading capability out. Expeditionary Advanced Base Operations puts small, mobile, low-signature Marine detachments into austere locations inside contested maritime terrain to support sea denial and sea control. Littoral Operations in a Contested Environment is the overarching Navy-Marine Corps approach to fighting in those same contested coastal waters. And Stand-In Forces describes units that deliberately operate inside an adversary's weapons engagement zone — accepting risk in order to complicate the adversary's targeting problem and buy time for the rest of the joint force. Force Design touches every element you've studied so far: the ACE is fielding smaller, more networked unmanned systems; the GCE is standing up Marine Littoral Regiments; the LCE is reconfiguring the Maritime Prepositioning Force for day-to-day competition, not just crisis response; and Training and Education 2030 — the same doctrine behind the tools you're using right now — is rebuilding how Marines and the Navy officers who serve alongside them actually learn all of this."},
+"LDR":{title:"What the Board Is Really Testing When They Ask About Leadership",
+text:"About two-thirds of your oral board questions are open-ended, and most of those draw from MCWP 6-10, Leading Marines. This isn't trivia — it's the board trying to find out whether you've actually internalized what it means to lead in this culture, not just memorized a page number. Start with the Corps' expeditionary mindset — the idea that Marines are, in their own words, a middle-weight expeditionary force in readiness, built to deploy fast and operate with minimal support. That mindset shows up in leadership traits like self-discipline and moral courage — the willingness to do the right thing even when it costs you something personally. MCDP 1 adds a piece that surprises some candidates: the deliberate rejection of a zero defects mentality. Leaders are expected to encourage boldness and initiative even when it leads to honest mistakes from junior Marines, because punishing every error teaches people to stop taking initiative at all. What doesn't get tolerated is inaction, timidity, or avoiding responsibility. That distinction — bold mistakes forgiven, timid inaction not — is exactly the kind of nuance the board wants you to draw out unprompted. Trust runs through all of it. MCDP 1 frames trust as built from two things: confidence, earned through demonstrated professional skill, and familiarity, earned through shared experience. That's why decentralized leadership works in this culture — commanders can push decision-making down because they've built real trust, not because they're avoiding responsibility. When the board asks you an open-ended question — how does your integrity affect the people you lead, why do standardized planning processes matter against a near-peer adversary — they're not looking for a textbook definition. They're looking for you to connect the doctrine to how you actually intend to lead. Have real examples ready. That's what separates a passing answer from a memorized one."}
+};
+
+/* ---------------------------------------------------------------
+   STATE (in-memory only — no localStorage per platform restriction)
+----------------------------------------------------------------*/
+let state = {
+  xp: 0,
+  streakDays: 0,
+  lastActiveDate: null,
+  cards: {},      // id -> {ease, interval(days), due(ms), reps}
+  appliedProg: {}, // id -> level (0/1/2)
+  boardsTaken: 0,
+  bestBoardPct: 0,
+  podcastsListened: []
+};
+
+function cardId(item){ return "R:" + item.s + ":" + item.q.slice(0,24); }
+function appliedId(item){ return "A:" + item.s + ":" + item.q.slice(0,24); }
+
+function ensureCard(item){
+  const id = cardId(item);
+  if(!state.cards[id]) state.cards[id] = {ease:2.5, interval:0, due: Date.now(), reps:0};
+  return id;
+}
+
+function touchStreak(){
+  const today = new Date().toDateString();
+  if(state.lastActiveDate !== today){
+    const y = new Date(Date.now()-86400000).toDateString();
+    state.streakDays = (state.lastActiveDate === y) ? state.streakDays+1 : 1;
+    state.lastActiveDate = today;
+  }
+}
+
+/* ---------------------------------------------------------------
+   TABS
+----------------------------------------------------------------*/
+function goTab(name){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  ['dashboard','flash','applied','podcast','board','progress'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
+  });
+  if(name!=='podcast') podcastStop();
+  if(name!=='board') stopBoardSpeech();
+  if(name==='dashboard') renderDashboard();
+  if(name==='flash') renderFlashTab();
+  if(name==='applied') renderAppliedTab();
+  if(name==='podcast') renderPodcastTab();
+  if(name==='progress') renderProgress();
+}
+document.getElementById('tabs').addEventListener('click', e=>{
+  if(e.target.tagName==='BUTTON') goTab(e.target.dataset.tab);
+});
+
+/* ---------------------------------------------------------------
+   MASTERY CALC
+----------------------------------------------------------------*/
+function sectionMastery(sec){
+  const roteItems = ROTE.filter(r=>r.s===sec);
+  const appItems = APPLIED.filter(a=>a.s===sec);
+  let total = roteItems.length + appItems.length;
+  if(total===0) return 0;
+  let score = 0;
+  roteItems.forEach(r=>{
+    const c = state.cards[cardId(r)];
+    if(c) score += Math.min(1, c.reps>0 ? (c.interval>=4?1:0.5) : 0);
+  });
+  appItems.forEach(a=>{
+    const lvl = state.appliedProg[appliedId(a)];
+    if(lvl===2) score += 1;
+    else if(lvl===1) score += 0.5;
+  });
+  return Math.round((score/total)*100);
+}
+function overallMastery(){
+  const secs = Object.keys(SECTIONS);
+  const vals = secs.map(sectionMastery);
+  return Math.round(vals.reduce((a,b)=>a+b,0)/secs.length);
+}
+function dueCount(){
+  const now = Date.now();
+  return ROTE.filter(r=>{
+    const c = state.cards[cardId(r)];
+    return !c || c.due<=now;
+  }).length;
+}
+
+function renderSectionBars(targetId){
+  const el = document.getElementById(targetId);
+  el.innerHTML = '';
+  Object.keys(SECTIONS).forEach(sec=>{
+    const pct = sectionMastery(sec);
+    const div = document.createElement('div');
+    div.className = 'section-bar';
+    div.innerHTML = `<div class="hd"><span>${SECTIONS[sec]}</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>`;
+    el.appendChild(div);
+  });
+}
+
+function renderDashboard(){
+  document.getElementById('dashDue').textContent = dueCount();
+  document.getElementById('dashXP').textContent = state.xp;
+  document.getElementById('dashStreak').textContent = state.streakDays;
+  document.getElementById('dashMastery').textContent = overallMastery()+'%';
+  renderSectionBars('dashSections');
+}
+
+function renderProgress(){
+  document.getElementById('progXP').textContent = state.xp;
+  document.getElementById('progStreak').textContent = state.streakDays;
+  document.getElementById('progBoards').textContent = state.boardsTaken;
+  document.getElementById('progBest').textContent = state.bestBoardPct+'%';
+  document.getElementById('progPodcasts').textContent = state.podcastsListened.length;
+  renderSectionBars('progSections');
+}
+
+/* ---------------------------------------------------------------
+   FLASHCARDS (SM-2 lite)
+----------------------------------------------------------------*/
+let flashQueue = [];
+let flashCurrent = null;
+
+function populateSectionSelect(selectEl, includeAll=true){
+  selectEl.innerHTML = '';
+  if(includeAll){
+    const o = document.createElement('option'); o.value='ALL'; o.textContent='All sections'; selectEl.appendChild(o);
+  }
+  Object.keys(SECTIONS).forEach(sec=>{
+    const o = document.createElement('option'); o.value=sec; o.textContent=SECTIONS[sec]; selectEl.appendChild(o);
+  });
+}
+populateSectionSelect(document.getElementById('flashSection'));
+populateSectionSelect(document.getElementById('appliedSection'));
+document.getElementById('flashSection').addEventListener('change', renderFlashTab);
+document.getElementById('appliedSection').addEventListener('change', renderAppliedTab);
+
+function buildFlashQueue(){
+  const sec = document.getElementById('flashSection').value;
+  const now = Date.now();
+  let pool = ROTE.filter(r=> sec==='ALL' || r.s===sec);
+  // due first, then not-yet-seen, then everything else, shuffled within group
+  const due = [], fresh = [], later = [];
+  pool.forEach(r=>{
+    const id = cardId(r);
+    const c = state.cards[id];
+    if(!c) fresh.push(r);
+    else if(c.due<=now) due.push(r);
+    else later.push(r);
+  });
+  shuffle(due); shuffle(fresh);
+  flashQueue = due.concat(fresh).concat(later);
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+
+function renderFlashTab(){
+  buildFlashQueue();
+  nextFlash();
+}
+function nextFlash(){
+  document.getElementById('flashA').style.display='none';
+  document.getElementById('flashRateRow').style.display='none';
+  document.getElementById('flashControls').style.display='block';
+  if(flashQueue.length===0){
+    document.getElementById('flashTag').textContent='';
+    document.getElementById('flashQ').textContent='No cards in this filter yet — nice work. Try "All sections" or check the Applied Discussion tab.';
+    document.getElementById('flashCounter').textContent='';
+    flashCurrent=null;
+    return;
+  }
+  flashCurrent = flashQueue.shift();
+  document.getElementById('flashTag').textContent = SECTIONS[flashCurrent.s];
+  document.getElementById('flashQ').textContent = flashCurrent.q;
+  document.getElementById('flashA').textContent = flashCurrent.a;
+  document.getElementById('flashCounter').textContent = flashQueue.length + ' more queued this session · ' + dueCount() + ' due overall';
+}
+function revealFlash(){
+  document.getElementById('flashA').style.display='block';
+  document.getElementById('flashControls').style.display='none';
+  document.getElementById('flashRateRow').style.display='grid';
+}
+function rateFlash(grade){
+  if(!flashCurrent) return;
+  const id = ensureCard(flashCurrent);
+  const c = state.cards[id];
+  c.reps += 1;
+  if(grade===0){ c.interval = 0; c.due = Date.now() + 2*60*1000; c.ease = Math.max(1.3, c.ease-0.2); state.xp += 1; }
+  else if(grade===1){ c.interval = Math.max(1, c.interval*1.2); c.due = Date.now() + c.interval*86400000; c.ease = Math.max(1.3, c.ease-0.05); state.xp += 2; }
+  else if(grade===2){ c.interval = c.interval===0 ? 1 : c.interval*c.ease; c.due = Date.now() + c.interval*86400000; state.xp += 4; }
+  else { c.interval = c.interval===0 ? 3 : c.interval*(c.ease+0.4); c.due = Date.now() + c.interval*86400000; c.ease += 0.1; state.xp += 6; }
+  touchStreak();
+  nextFlash();
+}
+
+/* ---------------------------------------------------------------
+   APPLIED DISCUSSION
+----------------------------------------------------------------*/
+let appliedQueue = [];
+let appliedCurrent = null;
+
+function buildAppliedQueue(){
+  const sec = document.getElementById('appliedSection').value;
+  let pool = APPLIED.filter(a=> sec==='ALL' || a.s===sec);
+  shuffle(pool);
+  appliedQueue = pool;
+}
+function renderAppliedTab(){
+  buildAppliedQueue();
+  nextApplied();
+}
+function nextApplied(){
+  document.getElementById('appliedAnswer').value='';
+  document.querySelectorAll('#appliedRate button').forEach(b=>b.className='');
+  if(appliedQueue.length===0){
+    document.getElementById('appliedTag').textContent='';
+    document.getElementById('appliedQ').textContent='All prompts in this filter done for now — try another section.';
+    document.getElementById('appliedCounter').textContent='';
+    appliedCurrent=null;
+    return;
+  }
+  appliedCurrent = appliedQueue.shift();
+  document.getElementById('appliedTag').textContent = SECTIONS[appliedCurrent.s] + ' · ' + appliedCurrent.ref;
+  document.getElementById('appliedQ').textContent = appliedCurrent.q;
+  document.getElementById('appliedCounter').textContent = appliedQueue.length + ' more queued this session';
+}
+function rateApplied(v){
+  if(!appliedCurrent) return;
+  const id = appliedId(appliedCurrent);
+  state.appliedProg[id] = v;
+  state.xp += (v===2?5:v===1?2:1);
+  touchStreak();
+  const btns = document.querySelectorAll('#appliedRate button');
+  btns.forEach(b=>b.className='');
+  const cls = v===0?'sel-missed':v===1?'sel-partial':'sel-solid';
+  document.querySelector('#appliedRate button[data-v="'+v+'"]').classList.add(cls);
+}
+
+/* ---------------------------------------------------------------
+   MURDER BOARD
+----------------------------------------------------------------*/
+let boardQueue = [];
+let boardIdx = 0;
+let boardScores = [];
+let boardCurrent = null;
+
+function startBoard(){
+  const n = parseInt(document.getElementById('boardLength').value,10);
+  const roteN = Math.round(n/3);
+  const appN = n - roteN;
+  let roteChoices = shuffle(ROTE.slice()).slice(0, roteN).map(x=>({...x, kind:'rote'}));
+  let appChoices = shuffle(APPLIED.slice()).slice(0, appN).map(x=>({...x, kind:'applied'}));
+  boardQueue = shuffle(roteChoices.concat(appChoices));
+  boardIdx = 0; boardScores = [];
+  document.getElementById('boardSetup').style.display='none';
+  document.getElementById('boardResult').style.display='none';
+  document.getElementById('boardRun').style.display='block';
+  nextBoardQ();
+}
+function nextBoardQ(){
+  stopBoardSpeech();
+  document.getElementById('boardRah').classList.remove('show');
+  document.getElementById('boardA').style.display='none';
+  document.getElementById('boardRateRow').style.display='none';
+  document.getElementById('boardRevealRow').style.display='block';
+  if(boardIdx >= boardQueue.length){ finishBoard(); return; }
+  boardCurrent = boardQueue[boardIdx];
+  const kindLabel = boardCurrent.kind==='rote' ? 'ROTE — pure recall' : 'APPLIED — open discussion';
+  document.getElementById('boardTag').textContent = SECTIONS[boardCurrent.s] + ' · ' + kindLabel;
+  document.getElementById('boardQ').textContent = boardCurrent.q;
+  document.getElementById('boardA').textContent = boardCurrent.kind==='rote' ? boardCurrent.a : ('Reference: ' + boardCurrent.ref + ' — score yourself on completeness, confidence, and bearing.');
+  document.getElementById('boardCounter').textContent = 'Question ' + (boardIdx+1) + ' of ' + boardQueue.length;
+  document.getElementById('boardProgressBar').style.width = Math.round((boardIdx/boardQueue.length)*100)+'%';
+  const replayBtn = document.getElementById('boardReplayBtn');
+  if(boardVoiceEnabled()){
+    replayBtn.style.display='inline-block';
+    speakBoardQuestion(boardCurrent.q);
+  } else {
+    replayBtn.style.display='none';
+  }
+}
+function revealBoard(){
+  stopBoardSpeech();
+  document.getElementById('boardA').style.display='block';
+  document.getElementById('boardRevealRow').style.display='none';
+  document.getElementById('boardRateRow').style.display='grid';
+}
+function showRah(){
+  const el = document.getElementById('boardRah');
+  if(!el) return;
+  el.classList.remove('show');
+  void el.offsetWidth; // restart animation
+  el.classList.add('show');
+}
+function scoreBoard(v){
+  boardScores.push(v/2); // normalize to 0, .5, 1
+  boardIdx += 1;
+  if(v===2){
+    showRah();
+    setTimeout(nextBoardQ, 650); // let the "Rah!" pop play before advancing
+    return;
+  }
+  nextBoardQ();
+}
+function finishBoard(){
+  stopBoardSpeech();
+  document.getElementById('boardRun').style.display='none';
+  document.getElementById('boardResult').style.display='block';
+  const pct = Math.round((boardScores.reduce((a,b)=>a+b,0)/boardScores.length)*100);
+  state.boardsTaken += 1;
+  state.bestBoardPct = Math.max(state.bestBoardPct, pct);
+  state.xp += 15;
+  touchStreak();
+  const banner = document.getElementById('boardResultBanner');
+  const detail = document.getElementById('boardResultDetail');
+  if(pct>=80){
+    banner.className='result-banner pass';
+    banner.textContent = 'PASS — ' + pct + '% (standard is 80%)';
+    detail.textContent = "That matches the real board's passing standard. Keep rotating sections so nothing goes stale.";
+  } else {
+    banner.className='result-banner fail';
+    banner.textContent = 'NOT YET — ' + pct + '% (standard is 80%)';
+    detail.textContent = "Per the actual PQS policy, a failed oral board can be retaken after two weeks — use that runway to hit your weakest sections in Flashcards and Applied Discussion.";
+  }
+}
+function resetBoard(){
+  stopBoardSpeech();
+  document.getElementById('boardResult').style.display='none';
+  document.getElementById('boardSetup').style.display='block';
+}
+
+/* ---------------------------------------------------------------
+   PODCAST / LISTEN (browser SpeechSynthesis — no external audio files)
+----------------------------------------------------------------*/
+populateSectionSelect(document.getElementById('podcastSection'), false);
+document.getElementById('podcastSection').addEventListener('change', ()=>loadPodcastSection(document.getElementById('podcastSection').value));
+
+let podcastQueue = [];
+let podcastIdx = 0;
+let podcastKey = null;
+let podcastPlaying = false;
+const ttsSupported = ('speechSynthesis' in window);
+
+function splitSentences(text){
+  const m = text.match(/[^.!?]+[.!?]+(\s|$)/g);
+  return m ? m.map(s=>s.trim()).filter(Boolean) : [text];
+}
+
+function getEnglishVoices(){
+  if(!ttsSupported) return [];
+  const voices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+  return voices.length ? voices : speechSynthesis.getVoices();
+}
+
+// Browsers/OSes expose zero accent control over SpeechSynthesis — there is no
+// "add a southern accent" parameter. This heuristic just avoids the flattest,
+// most robotic default voice when a more natural one is already installed,
+// and leans toward a deeper voice for the board-member persona.
+function rankVoice(v){
+  const n = v.name.toLowerCase();
+  let score = 0;
+  if(/natural|neural|premium|enhanced|studio|online/.test(n)) score += 5;
+  if(v.lang === 'en-US') score += 3;
+  else if(v.lang.startsWith('en-GB')) score += 1;
+  if(/compact|espeak|robot/.test(n)) score -= 5;
+  if(/male|david|daniel|alex|fred|aaron|guy|mark|tom|ryan|eric|james|matthew|brian|christopher|george|kevin|paul/.test(n)) score += 2;
+  if(v.localService) score += 1;
+  return score;
+}
+function pickBestVoiceIndex(list){
+  if(!list.length) return 0;
+  let bestI = 0, bestScore = -Infinity;
+  list.forEach((v,i)=>{ const s = rankVoice(v); if(s>bestScore){ bestScore=s; bestI=i; } });
+  return bestI;
+}
+
+let voicesInitialized = false;
+function populateVoices(){
+  if(!ttsSupported) return;
+  const list = getEnglishVoices();
+  const best = pickBestVoiceIndex(list);
+  ['podcastVoice','boardVoice'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const prevVal = sel.value;
+    sel.innerHTML = '';
+    list.forEach((v,i)=>{
+      const o = document.createElement('option');
+      o.value = i; o.textContent = v.name + ' (' + v.lang + ')' + (i===best ? ' — recommended' : '');
+      sel.appendChild(o);
+    });
+    if(voicesInitialized && prevVal!=='' && list[prevVal]) sel.value = prevVal;
+    else sel.value = best;
+  });
+  voicesInitialized = true;
+  const note = document.getElementById('boardVoiceNote');
+  if(note){
+    note.textContent = list.length
+      ? "Auto-picked the most natural voice available on your device for the board persona (slightly slower, slightly lower pitch). Browser text-to-speech has no accent setting — install additional voices in your OS's speech/accessibility settings for more options."
+      : 'No text-to-speech voices found on this device or browser.';
+  }
+}
+if(ttsSupported){
+  populateVoices();
+  speechSynthesis.onvoiceschanged = populateVoices;
+  document.getElementById('podcastRate').addEventListener('input', e=>{
+    document.getElementById('podcastRateLabel').textContent = parseFloat(e.target.value).toFixed(2)+'x';
+  });
+} else {
+  const cb = document.getElementById('boardVoiceToggle');
+  if(cb){ cb.checked = false; cb.disabled = true; }
+  const note = document.getElementById('boardVoiceNote');
+  if(note) note.textContent = 'Your browser does not support text-to-speech.';
+}
+
+/* ---------------------------------------------------------------
+   MURDER BOARD — voice
+----------------------------------------------------------------*/
+let boardUtterActive = false;
+function boardVoiceEnabled(){
+  const cb = document.getElementById('boardVoiceToggle');
+  return ttsSupported && !!cb && cb.checked;
+}
+function speakBoardQuestion(text){
+  if(!ttsSupported) return;
+  speechSynthesis.cancel();
+  const list = getEnglishVoices();
+  const vSel = document.getElementById('boardVoice').value;
+  const utter = new SpeechSynthesisUtterance(text);
+  if(list[vSel]) utter.voice = list[vSel];
+  // A touch slower and lower-pitched than default reads as more deliberate —
+  // closer to a seasoned board member than a flat default TTS voice. This is
+  // a delivery tweak, not a real regional accent, which SpeechSynthesis can't do.
+  utter.rate = 0.93;
+  utter.pitch = 0.85;
+  boardUtterActive = true;
+  utter.onend = ()=>{ boardUtterActive = false; };
+  utter.onerror = ()=>{ boardUtterActive = false; };
+  speechSynthesis.speak(utter);
+}
+function replayBoardQuestion(){
+  if(boardVoiceEnabled() && boardCurrent) speakBoardQuestion(boardCurrent.q);
+}
+function stopBoardSpeech(){
+  if(ttsSupported && boardUtterActive) speechSynthesis.cancel();
+  boardUtterActive = false;
+}
+const boardVoiceToggleEl = document.getElementById('boardVoiceToggle');
+if(boardVoiceToggleEl){
+  boardVoiceToggleEl.addEventListener('change', ()=>{
+    if(!boardVoiceEnabled()){
+      stopBoardSpeech();
+      document.getElementById('boardReplayBtn').style.display='none';
+    } else if(boardCurrent && document.getElementById('boardRun').style.display!=='none'){
+      document.getElementById('boardReplayBtn').style.display='inline-block';
+      speakBoardQuestion(boardCurrent.q);
+    }
+  });
+}
+
+function renderPodcastTab(){
+  const sel = document.getElementById('podcastSection');
+  if(!sel.value) sel.value = Object.keys(SECTIONS)[0];
+  if(podcastKey !== sel.value) loadPodcastSection(sel.value);
+}
+
+function loadPodcastSection(key){
+  podcastStop();
+  podcastKey = key;
+  const p = PODCASTS[key];
+  document.getElementById('podcastKicker').textContent = SECTIONS[key];
+  document.getElementById('podcastTitle').textContent = p ? p.title : 'No audio companion for this section yet.';
+  podcastQueue = p ? splitSentences(p.text) : [];
+  podcastIdx = 0;
+  const box = document.getElementById('podcastTranscript');
+  box.innerHTML = podcastQueue.map((s,i)=>'<span class="tts-sentence" id="tts-s'+i+'">'+s+'</span> ').join('');
+  document.getElementById('podcastProgressBar').style.width = '0%';
+  document.getElementById('podcastStatus').textContent = ttsSupported ? 'Ready.' : 'Your browser does not support text-to-speech — try reading the transcript below, or switch to Chrome/Edge.';
+  document.getElementById('podcastPlayBtn').textContent = '▶ Play';
+  document.getElementById('podcastPlayBtn').disabled = !ttsSupported;
+}
+
+function highlightSentence(i){
+  document.querySelectorAll('.tts-sentence').forEach(el=>el.classList.remove('tts-active'));
+  const el = document.getElementById('tts-s'+i);
+  if(el){ el.classList.add('tts-active'); el.scrollIntoView({block:'center', behavior:'smooth'}); }
+  document.getElementById('podcastProgressBar').style.width = Math.round(((i+1)/podcastQueue.length)*100)+'%';
+}
+
+function speakFrom(i){
+  if(!ttsSupported || i>=podcastQueue.length){ podcastFinish(); return; }
+  const utter = new SpeechSynthesisUtterance(podcastQueue[i]);
+  const voices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+  const list = voices.length ? voices : speechSynthesis.getVoices();
+  const vSel = document.getElementById('podcastVoice').value;
+  if(list[vSel]) utter.voice = list[vSel];
+  utter.rate = parseFloat(document.getElementById('podcastRate').value) || 1;
+  highlightSentence(i);
+  document.getElementById('podcastStatus').textContent = 'Speaking sentence ' + (i+1) + ' of ' + podcastQueue.length + '…';
+  utter.onend = ()=>{
+    if(!podcastPlaying) return; // stopped by user
+    podcastIdx = i+1;
+    speakFrom(podcastIdx);
+  };
+  utter.onerror = ()=>{ if(podcastPlaying) podcastStop(); };
+  speechSynthesis.speak(utter);
+}
+
+function podcastPlayPause(){
+  if(!ttsSupported) return;
+  const btn = document.getElementById('podcastPlayBtn');
+  if(podcastPlaying){
+    speechSynthesis.pause();
+    podcastPlaying = false;
+    btn.textContent = '▶ Resume';
+    document.getElementById('podcastStatus').textContent = 'Paused.';
+  } else {
+    podcastPlaying = true;
+    btn.textContent = '⏸ Pause';
+    if(speechSynthesis.paused){
+      speechSynthesis.resume();
+    } else {
+      speakFrom(podcastIdx);
+    }
+  }
+}
+function podcastStop(){
+  if(ttsSupported) speechSynthesis.cancel();
+  podcastPlaying = false;
+  podcastIdx = 0;
+  const btn = document.getElementById('podcastPlayBtn');
+  if(btn) btn.textContent = '▶ Play';
+  const status = document.getElementById('podcastStatus');
+  if(status) status.textContent = 'Stopped.';
+  document.querySelectorAll('.tts-sentence').forEach(el=>el.classList.remove('tts-active'));
+  const bar = document.getElementById('podcastProgressBar');
+  if(bar) bar.style.width = '0%';
+}
+function podcastRestart(){
+  podcastStop();
+  podcastPlaying = true;
+  document.getElementById('podcastPlayBtn').textContent = '⏸ Pause';
+  speakFrom(0);
+}
+function podcastFinish(){
+  podcastPlaying = false;
+  document.getElementById('podcastPlayBtn').textContent = '▶ Play';
+  document.getElementById('podcastStatus').textContent = 'Finished — nice work.';
+  podcastIdx = 0;
+  if(podcastKey && !state.podcastsListened.includes(podcastKey)){
+    state.podcastsListened.push(podcastKey);
+    state.xp += 8;
+    touchStreak();
+  }
+}
+
+/* ---------------------------------------------------------------
+   EXPORT / IMPORT (no localStorage — file-based persistence)
+----------------------------------------------------------------*/
+function exportProgress(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fmf-trainer-progress.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importProgress(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const loaded = JSON.parse(e.target.result);
+      state = Object.assign({xp:0,streakDays:0,lastActiveDate:null,cards:{},appliedProg:{},boardsTaken:0,bestBoardPct:0,podcastsListened:[]}, loaded);
+      renderDashboard(); renderProgress();
+      alert('Progress imported.');
+    }catch(err){ alert('Could not read that file — is it a progress export from this tool?'); }
+  };
+  reader.readAsText(file);
+}
+
+/* init */
+renderDashboard();
+</script>
+</body>
+</html>
