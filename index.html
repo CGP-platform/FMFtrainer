@@ -363,6 +363,7 @@
         <button data-v="2" onclick="ratePicture(2)">Nailed it</button>
       </div>
       <div class="row" style="margin-top:12px;">
+        <button class="btn ghost" id="picturePrevBtn" onclick="prevPicture()" disabled>&larr; Back</button>
         <button class="btn ghost" onclick="nextPicture()">Next image &rarr;</button>
       </div>
     </div>
@@ -894,12 +895,15 @@ function renderProgress(){
 ----------------------------------------------------------------*/
 let pictureQueue = [];
 let pictureCurrent = null;
+let pictureHistory = [];
 
 function buildPictureQueue(){
   const cat = document.getElementById('pictureCategory').value;
   let pool = PICTURES.filter(p=> cat==='ALL' || p.cat===cat);
   shuffle(pool);
   pictureQueue = pool;
+  pictureHistory = [];
+  pictureCurrent = null;
 }
 function renderPicturesTab(){
   buildPictureQueue();
@@ -909,20 +913,15 @@ function pictureImgError(){
   const frame = document.getElementById('pictureFrame');
   frame.innerHTML = '<div class="pic-fallback">Image did not load (offline or blocked connection).<br>Use the facts below for ID once revealed.</div>';
 }
-function nextPicture(){
+function resetPictureCardUI(){
   document.getElementById('pictureRevealRow').style.display = 'block';
   document.getElementById('pictureAnswerBlock').style.display = 'none';
   document.getElementById('pictureRate').style.display = 'none';
   document.querySelectorAll('#pictureRate button').forEach(b=>b.className='');
   const frame = document.getElementById('pictureFrame');
   frame.innerHTML = '<img id="pictureImg" src="" alt="Equipment to identify" onerror="pictureImgError()">';
-  if(pictureQueue.length===0){
-    document.getElementById('pictureTag').textContent='';
-    document.getElementById('pictureCounter').textContent='All images in this filter done for now - try another category.';
-    pictureCurrent=null;
-    return;
-  }
-  pictureCurrent = pictureQueue.shift();
+}
+function displayPictureCard(){
   document.getElementById('pictureTag').textContent = pictureCurrent.cat;
   document.getElementById('pictureCounter').textContent = pictureQueue.length + ' more queued this session';
   if(pictureCurrent.data){
@@ -931,6 +930,27 @@ function nextPicture(){
     const fileUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(pictureCurrent.img.replace(/ /g,'_'));
     document.getElementById('pictureImg').src = fileUrl;
   }
+  document.getElementById('picturePrevBtn').disabled = (pictureHistory.length===0);
+}
+function nextPicture(){
+  resetPictureCardUI();
+  if(pictureQueue.length===0){
+    document.getElementById('pictureTag').textContent='';
+    document.getElementById('pictureCounter').textContent='All images in this filter done for now - try another category.';
+    pictureCurrent=null;
+    document.getElementById('picturePrevBtn').disabled = (pictureHistory.length===0);
+    return;
+  }
+  if(pictureCurrent) pictureHistory.push(pictureCurrent);
+  pictureCurrent = pictureQueue.shift();
+  displayPictureCard();
+}
+function prevPicture(){
+  if(pictureHistory.length===0 || !pictureCurrent) return;
+  resetPictureCardUI();
+  pictureQueue.unshift(pictureCurrent);
+  pictureCurrent = pictureHistory.pop();
+  displayPictureCard();
 }
 function revealPicture(){
   if(!pictureCurrent) return;
