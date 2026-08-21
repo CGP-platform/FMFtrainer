@@ -232,7 +232,6 @@
     <button data-tab="pictures">Pictures</button>
     <button data-tab="cprl">CPRL</button>
     <button data-tab="board">Murder Board</button>
-    <button data-tab="progress">About</button>
   </nav>
 
   <!-- DASHBOARD -->
@@ -250,27 +249,16 @@
         the same model used in medical education board prep.
       </p>
     </div>
-    <div class="grid2">
-      <div class="card">
-        <h3>Your snapshot</h3>
-        <div class="grid2" style="grid-template-columns:1fr 1fr;">
-          <div class="stat"><div class="num" id="dashDue">0</div><div class="lbl">Cards due</div></div>
-          <div class="stat"><div class="num" id="dashXP">0</div><div class="lbl">XP earned</div></div>
-          <div class="stat"><div class="num" id="dashStreak">0</div><div class="lbl">Day streak</div></div>
-          <div class="stat"><div class="num" id="dashMastery">0%</div><div class="lbl">Overall mastery</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Jump in</h3>
-        <p class="muted" style="margin-top:0">Rote facts fade fastest without spaced review - start there.</p>
-        <div class="row">
-          <button class="btn" onclick="goTab('flash')">Review flashcards</button>
-          <button class="btn ghost" onclick="goTab('applied')">Practice discussion</button>
-          <button class="btn ghost" onclick="goTab('podcast')">Listen to a section</button>
-          <button class="btn ghost" onclick="goTab('pictures')">Identify equipment</button>
-          <button class="btn ghost" onclick="goTab('verbatim')">Drill verbatim knowledge</button>
-          <button class="btn scarlet" onclick="goTab('board')">Take a murder board</button>
-        </div>
+    <div class="card">
+      <h3>Jump in</h3>
+      <p class="muted" style="margin-top:0">Rote facts fade fastest without spaced review - start there.</p>
+      <div class="row">
+        <button class="btn" onclick="goTab('flash')">Review flashcards</button>
+        <button class="btn ghost" onclick="goTab('applied')">Practice discussion</button>
+        <button class="btn ghost" onclick="goTab('podcast')">Listen to a section</button>
+        <button class="btn ghost" onclick="goTab('pictures')">Identify equipment</button>
+        <button class="btn ghost" onclick="goTab('verbatim')">Drill verbatim knowledge</button>
+        <button class="btn scarlet" onclick="goTab('board')">Take a murder board</button>
       </div>
     </div>
     <div class="card">
@@ -580,6 +568,7 @@
   </section>
 
   <footer class="note">
+    <p style="margin:0 0 10px;"><a href="#" onclick="goTab('progress');return false;" style="color:var(--navy);font-weight:700;text-decoration:underline;">About this site</a></p>
     Content drawn from the FMF PQS (NAVEDTRA 43908-1D), FMF Study Guide, and the official FMFWO/QO Oral Board
     prep outline in this project. Not a substitute for the full PQS, Study Guide, MCWP 6-10, and FMF Podcasts -
     use this to drill, not to replace primary study.
@@ -1090,6 +1079,7 @@ function toggleDictation(target, textareaId){
   rec.continuous = true;
   rec.interimResults = true;
   const ta = document.getElementById(textareaId);
+  ta.focus();
   let baseText = ta.value;
   if(baseText && !/\s$/.test(baseText)) baseText += ' ';
   let finalText = baseText;
@@ -1214,7 +1204,8 @@ function checkVerbatim(){
     banner.className='result-banner fail';
     banner.textContent = 'You got some work to do - ' + pct + '% match';
   }
-  detail.textContent = 'Scored on word-for-word sequence match against the required text - tap "Show correct text" to see exactly where you drifted.';
+  detail.textContent = 'Scored on word-for-word sequence match against the required text - the correct text is shown below.';
+  revealVerbatim();
 }
 
 /* ---------------------------------------------------------------
@@ -1328,10 +1319,10 @@ function renderSectionBars(targetId){
 }
 
 function renderDashboard(){
-  document.getElementById('dashDue').textContent = dueCount();
-  document.getElementById('dashXP').textContent = state.xp;
-  document.getElementById('dashStreak').textContent = state.streakDays;
-  document.getElementById('dashMastery').textContent = overallMastery()+'%';
+  const dueEl = document.getElementById('dashDue'); if(dueEl) dueEl.textContent = dueCount();
+  const xpEl = document.getElementById('dashXP'); if(xpEl) xpEl.textContent = state.xp;
+  const streakEl = document.getElementById('dashStreak'); if(streakEl) streakEl.textContent = state.streakDays;
+  const masteryEl = document.getElementById('dashMastery'); if(masteryEl) masteryEl.textContent = overallMastery()+'%';
   renderSectionBars('dashSections');
 }
 
