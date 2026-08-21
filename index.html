@@ -162,6 +162,50 @@
     display:inline-block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
     color:#fff;background:var(--scarlet);padding:3px 9px;border-radius:999px;margin-bottom:8px;
   }
+  .mic-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+  .mic-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:#fff;color:var(--navy);border:1px solid var(--navy);padding:8px 14px;
+    border-radius:999px;font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s;
+  }
+  .mic-btn:hover{background:#eef2f7;}
+  .mic-btn.listening{background:var(--scarlet);color:#fff;border-color:var(--scarlet);animation:micPulse 1.4s infinite;}
+  .mic-btn:disabled{opacity:.45;cursor:not-allowed;}
+  @keyframes micPulse{
+    0%{box-shadow:0 0 0 0 rgba(166,25,46,.5);}
+    70%{box-shadow:0 0 0 10px rgba(166,25,46,0);}
+    100%{box-shadow:0 0 0 0 rgba(166,25,46,0);}
+  }
+  .mic-note{font-size:.72rem;color:var(--ink-soft);}
+  .verbatim-target{
+    background:#faf9f6;border:1px dashed var(--line);border-radius:10px;padding:14px;
+    font-size:.92rem;line-height:1.6;color:var(--navy-light);margin-top:14px;
+  }
+  .verbatim-target.revealed{border-style:solid;}
+  .result-banner.warn{background:#fff6e0;color:var(--warn);border:1px solid #f0dca0;}
+  .cprl-cat-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .cprl-cat-bar button{
+    border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:7px 14px;
+    border-radius:999px;font-size:.78rem;font-weight:600;cursor:pointer;
+  }
+  .cprl-cat-bar button.active{background:var(--navy);color:var(--gold-light);border-color:var(--navy);}
+  .cprl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;}
+  .cprl-card{
+    display:block;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:.15s;
+    box-shadow:var(--shadow);
+  }
+  .cprl-card:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.15);}
+  .cprl-cover{
+    width:100%;aspect-ratio:2/3;background:linear-gradient(160deg,var(--navy),var(--navy-light));
+    display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;
+  }
+  .cprl-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+  .cprl-fallback{color:var(--gold-light);font-size:.78rem;font-weight:700;text-align:center;padding:14px;line-height:1.4;}
+  .cprl-info{padding:9px 10px 12px;}
+  .cprl-title{font-size:.78rem;font-weight:700;color:var(--navy);line-height:1.3;margin:0 0 3px;}
+  .cprl-author{font-size:.7rem;color:var(--ink-soft);margin:0;}
+  .cprl-buy{font-size:.68rem;color:var(--scarlet);font-weight:700;margin-top:6px;margin-bottom:0;}
 </style>
 </head>
 <body>
@@ -183,10 +227,12 @@
     <button data-tab="dashboard" class="active">Dashboard</button>
     <button data-tab="flash">Flashcards</button>
     <button data-tab="applied">Applied Discussion</button>
+    <button data-tab="verbatim">Verbatim</button>
     <button data-tab="podcast">Listen</button>
     <button data-tab="pictures">Pictures</button>
+    <button data-tab="cprl">CPRL</button>
     <button data-tab="board">Murder Board</button>
-    <button data-tab="progress">Progress &amp; Save</button>
+    <button data-tab="progress">About</button>
   </nav>
 
   <!-- DASHBOARD -->
@@ -222,6 +268,7 @@
           <button class="btn ghost" onclick="goTab('applied')">Practice discussion</button>
           <button class="btn ghost" onclick="goTab('podcast')">Listen to a section</button>
           <button class="btn ghost" onclick="goTab('pictures')">Identify equipment</button>
+          <button class="btn ghost" onclick="goTab('verbatim')">Drill verbatim knowledge</button>
           <button class="btn scarlet" onclick="goTab('board')">Take a murder board</button>
         </div>
       </div>
@@ -279,6 +326,10 @@
         <div class="tag" id="appliedTag"></div>
         <div class="q" id="appliedQ"></div>
       </div>
+      <div class="mic-row">
+        <button type="button" class="mic-btn" id="mic-applied" onclick="toggleDictation('applied','appliedAnswer')">🎙 Talk to text</button>
+        <span class="mic-note">Simulates speaking to the board - dictate your answer, then edit as needed.</span>
+      </div>
       <textarea id="appliedAnswer" placeholder="Talk it out loud, then jot the key points you'd hit in front of the board..."></textarea>
       <div class="self-rate" id="appliedRate">
         <button data-v="0" onclick="rateApplied(0)">Missed it</button>
@@ -288,6 +339,37 @@
       <div class="row" style="margin-top:12px;">
         <button class="btn ghost" onclick="nextApplied()">Next prompt →</button>
       </div>
+    </div>
+  </section>
+
+  <!-- VERBATIM -->
+  <section id="tab-verbatim" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <h2 style="margin-bottom:2px;">Verbatim Knowledge</h2>
+          <p class="muted" style="margin:0;">Some things have to come out word-for-word in front of the board. Type or dictate your attempt, then check it against the required text.</p>
+        </div>
+        <select id="verbatimSelect" onchange="loadVerbatim(this.value)"></select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tag" id="verbatimTag"></div>
+      <h3 id="verbatimPromptTitle" style="margin-top:2px;"></h3>
+      <div class="mic-row">
+        <button type="button" class="mic-btn" id="mic-verbatim" onclick="toggleDictation('verbatim','verbatimAnswer')">🎙 Talk to text</button>
+        <span class="mic-note">Recite it out loud or type it - punctuation doesn't count, exact wording does.</span>
+      </div>
+      <textarea id="verbatimAnswer" placeholder="Recite it from memory..."></textarea>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn scarlet" onclick="checkVerbatim()">Check my work</button>
+        <button class="btn ghost" onclick="revealVerbatim()">Show correct text</button>
+      </div>
+      <div id="verbatimResult" style="display:none;margin-top:14px;">
+        <div class="result-banner" id="verbatimBanner"></div>
+        <p class="verbatim-score muted" id="verbatimScoreDetail"></p>
+      </div>
+      <div class="verbatim-target" id="verbatimTarget" style="display:none;"></div>
     </div>
   </section>
 
@@ -375,6 +457,16 @@
     </div>
   </section>
 
+  <!-- CPRL -->
+  <section id="tab-cprl" style="display:none">
+    <div class="card">
+      <h2>Commandant's Professional Reading List</h2>
+      <p class="muted">The Commandant's reading list, grouped the way the Marine Corps Association and Marine Corps University Library publish it. Tap a cover to open an Amazon search for that exact title.</p>
+      <div class="cprl-cat-bar" id="cprlCatBar"></div>
+    </div>
+    <div class="cprl-grid" id="cprlGrid"></div>
+  </section>
+
   <!-- MURDER BOARD -->
   <section id="tab-board" style="display:none">
     <div class="card" id="boardSetup">
@@ -415,6 +507,11 @@
       <div class="row" style="margin:10px 0;">
         <button class="btn ghost sm" id="boardReplayBtn" onclick="replayBoardQuestion()" style="display:none">🔊 Replay question</button>
       </div>
+      <div class="mic-row">
+        <button type="button" class="mic-btn" id="mic-board" onclick="toggleDictation('board','boardAnswer')">🎙 Talk to text</button>
+        <span class="mic-note">Give your answer out loud or type it, then reveal to self-score.</span>
+      </div>
+      <textarea id="boardAnswer" placeholder="Give your answer out loud or type it here before revealing the model points..."></textarea>
       <div id="boardRevealRow" style="margin-top:14px;">
         <button class="btn" style="width:100%" onclick="revealBoard()">Show model points / answer</button>
       </div>
@@ -433,8 +530,25 @@
     </div>
   </section>
 
-  <!-- PROGRESS -->
+  <!-- PROGRESS / ABOUT -->
   <section id="tab-progress" style="display:none">
+    <div class="card">
+      <div class="kicker">About this site</div>
+      <h2>What the Unofficial FMF Officer Trainer is - and isn't</h2>
+      <p class="muted">This is an independently built study aid to help Navy officers prepare for the FMFWO/FMFQO written exam and oral board. It brings together retrieval-practice flashcards, applied-discussion prompts, equipment ID drills, verbatim knowledge checks, reading-list browsing, and a full practice "murder board" so you can rehearse the format of the real thing before you're in the room.</p>
+      <p class="muted"><b>It is a supplement, not a replacement.</b> This tool is not official Navy or Marine Corps material, and is not affiliated with or endorsed by the Department of the Navy or the Department of Defense. It does not replace the PQS, MarineNet, your command's instruction, mentorship from qualified FMF officers, or the official reference publications (MCDP 1 Warfighting, MCDP 1-2, the FMF Study Guide, and the FMF PQS). Use it to drill and reinforce what you're learning elsewhere - not as your only source, and not as a substitute for reading the actual references cover to cover.</p>
+      <h3 style="margin-top:16px;">What's in each tab</h3>
+      <p class="muted">
+        <b>Flashcards</b> - spaced-repetition recall for rote facts, using a simplified scheduler so cards you miss come back sooner.<br>
+        <b>Applied Discussion</b> - open-ended, judgment-based prompts that mirror the ⅔ of the oral board that isn't pure memorization, with an optional talk-to-text button so you can practice speaking your answer.<br>
+        <b>Verbatim</b> - knowledge that has to be recited word-for-word, typed or spoken, scored against the exact required text.<br>
+        <b>Listen</b> - read-aloud playback of study sections for passive review.<br>
+        <b>Pictures</b> - visual identification drills for ships, vehicles, aircraft, and weapons.<br>
+        <b>CPRL</b> - the Commandant's Professional Reading List, browsable by category with links to buy each title.<br>
+        <b>Murder Board</b> - a timed, mixed rote/applied practice board scored to the same 80% standard as the real oral board.
+      </p>
+      <p class="muted" style="margin-top:10px;">This is a living tool built for Marines and Sailors preparing for the board - it will keep improving.</p>
+    </div>
     <div class="card">
       <h2>Progress</h2>
       <div class="stat-grid">
@@ -827,6 +941,95 @@ const PICTURES = [
 ];
 
 /* ---------------------------------------------------------------
+   VERBATIM - knowledge that must be recited word-for-word
+----------------------------------------------------------------*/
+const VERBATIM = [
+  {id:"mission", title:"Mission of the Marine Corps", ref:"10 U.S.C. § 5063",
+   text:"The Marine Corps shall be organized, trained, and equipped to provide Fleet Marine Forces of combined arms, together with supporting aviation forces, for service with the fleet in the seizure and defense of advanced naval bases and for the conduct of such land operations as may be essential to the prosecution of a naval campaign. In addition, the Marine Corps shall provide detachments and organizations for service on armed vessels of the Navy, shall provide security detachments for the protection of naval property at naval stations and bases, and shall perform such other duties as the President may direct. However, these additional duties may not detract from or interfere with the operations for which the Marine Corps is primarily organized."}
+];
+
+/* ---------------------------------------------------------------
+   CPRL - Commandant's Professional Reading List
+   Titles/authors/cover art per the official Marine Corps Association
+   list (mca-marines.org) and MCU Library guide - bibliographic data
+   only, hotlinked from the publisher's own site where a cover exists.
+----------------------------------------------------------------*/
+const CPRL = [
+  {cat:"Commandant's Choice",title:"Once an Eagle",author:"Anton Myrer",img:"https://www.mca-marines.org/wp-content/uploads/once-an-eagle.jpg",amazon:"https://www.amazon.com/s?k=9780062221629"},
+  {cat:"Foundational",title:"Constitution of the United States of America",author:"James Madison, et al.",img:"https://www.mca-marines.org/wp-content/uploads/constitution_1_of_4_630.jpg",amazon:"https://www.amazon.com/s?k=Constitution+of+the+United+States+of+America+James+Madison%2C+et+al."},
+  {cat:"Foundational",title:"MCDP 1 Warfighting",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCDP-1.jpg",amazon:"https://www.amazon.com/s?k=9781790765720"},
+  {cat:"Foundational",title:"MCDP 1-4 Competing",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCDP-1-4.jpg",amazon:"https://www.amazon.com/s?k=9798584268763"},
+  {cat:"Foundational",title:"MCDP 2 Intelligence",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCDP-2.jpg",amazon:"https://www.amazon.com/s?k=9781557424174"},
+  {cat:"Foundational",title:"MCDP 3 Expeditionary Operations",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCDP-3.jpg",amazon:"https://www.amazon.com/s?k=9781540317797"},
+  {cat:"Foundational",title:"MCDP 4 Logistics",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCDP-4.jpg",amazon:"https://www.amazon.com/s?k=9781546816065"},
+  {cat:"Foundational",title:"MCDP 7 Learning",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCDP-7.jpg",amazon:"https://www.amazon.com/s?k=MCDP+7+Learning+U.S.+Marine+Corps"},
+  {cat:"Foundational",title:"MCWP 6-11 Leading Marines",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/Screenshot-2025-12-11-at-2.12.37-PM.png",amazon:"https://www.amazon.com/s?k=9780359015023"},
+  {cat:"Foundational",title:"MCRP 6-11D Sustaining the Transformation",author:"U.S. Marine Corps",img:"https://www.mca-marines.org/wp-content/uploads/MCRP-6-11D.jpg",amazon:"https://www.amazon.com/s?k=9780359097555"},
+  {cat:"Heritage",title:"Always Faithful",author:"Owen Conner, Editor, et al.",img:"https://www.mca-marines.org/wp-content/uploads/AlwaysFaithful_thumbnail.jpg",amazon:"https://www.amazon.com/s?k=9798987336168"},
+  {cat:"Heritage",title:"First to Fight: An Inside View of the U.S. Marine Corps",author:"Victor H. Krulak",img:"https://www.mca-marines.org/wp-content/uploads/first-to-fight.jpg",amazon:"https://www.amazon.com/s?k=9781557504647"},
+  {cat:"Heritage",title:"How the Few Became the Proud: Crafting the Marine Corps Mystique 1874-1918",author:"Heather P. Venable",img:"https://www.mca-marines.org/wp-content/uploads/few-became-the-proud.jpg",amazon:"https://www.amazon.com/s?k=9781682479193"},
+  {cat:"Heritage",title:"Lejeune: A Marine's Life 1867-1942",author:"Merrill L. Bartlett",img:"https://www.mca-marines.org/wp-content/uploads/lejeune.jpg",amazon:"https://www.amazon.com/s?k=9781557500632"},
+  {cat:"Heritage",title:"Semper Fidelis: 250 Years of Marine Corps Honor, Courage, Commitment",author:"Marine Corps History Division",img:"https://www.mca-marines.org/wp-content/uploads/SemperFidelis_thumbnail.jpg",amazon:"https://www.amazon.com/s?k=Semper+Fidelis%3A+250+Years+of+Marine+Corps+Honor%2C+Courage%2C+Commitment+Marine+Corps+History+Division"},
+  {cat:"Heritage",title:"With the Old Breed at Peleliu and Okinawa",author:"E. B. Sledge",img:"https://www.mca-marines.org/wp-content/uploads/old-breed.jpg",amazon:"https://www.amazon.com/s?k=9780891419068"},
+  {cat:"Heritage",title:"Delivering Destruction: American Firepower and Amphibious Assault from Tarawa to Iwo Jima",author:"Christopher K. Hemler",img:null,amazon:"https://www.amazon.com/s?k=9781682471340"},
+  {cat:"Heritage",title:"This Kind of War: The Classic Korean War History",author:"T. R. Fehrenbach",img:null,amazon:"https://www.amazon.com/s?k=9781574883343"},
+  {cat:"Heritage",title:"The Marines of Montford Point: America's First Black Marines",author:"Melton Alonza McLaurin",img:"https://www.mca-marines.org/wp-content/uploads/montford-point.jpg",amazon:"https://www.amazon.com/s?k=9780807861769"},
+  {cat:"Heritage",title:"Code Talker: The First and Only Memoir by One of the Original Navajo Code Talkers of WWII",author:"Chester Nez and Judith Schiess Avila",img:"https://www.mca-marines.org/wp-content/uploads/code-talker-2.jpg",amazon:"https://www.amazon.com/s?k=9780425247853"},
+  {cat:"Heritage",title:"The American War in Afghanistan: A History",author:"Carter Malkasian",img:"https://www.mca-marines.org/wp-content/uploads/american-war-in-afghanistan.jpg",amazon:"https://www.amazon.com/s?k=9780197645499"},
+  {cat:"Heritage",title:"Corps Competency? III Marine Amphibious Force Headquarters in Vietnam",author:"Michael F. Morris",img:"https://www.mca-marines.org/wp-content/uploads/Corps-Compentency-scaled.jpg",amazon:"https://www.amazon.com/s?k=9780700636938"},
+  {cat:"Heritage",title:"Echo in Ramadi: The Firsthand Story of U.S. Marines in Iraq's Deadliest City",author:"Scott A. Huesing",img:"https://www.mca-marines.org/wp-content/uploads/echo-in-ramadi.jpg",amazon:"https://www.amazon.com/s?k=9781621579618"},
+  {cat:"Heritage",title:"On Contested Shores, Vol. I: The Evolving Role of Amphibious Operations in the History of Warfare",author:"Timothy Heck and B.A. Friedman, Editors",img:null,amazon:"https://www.amazon.com/s?k=9781732003149"},
+  {cat:"Heritage",title:"On Contested Shores, Vol. II: The Evolving Role of Amphibious Operations in the History of Warfare",author:"Timothy Heck, B.A. Friedman, and Walker D. Mills, Editors",img:null,amazon:"https://www.amazon.com/s?k=9798986259581"},
+  {cat:"Heritage",title:"Targeted: Beirut: The 1983 Marine Barracks Bombing and the Untold Origin Story of the War on Terror",author:"Jack Carr and James M. Scott",img:"https://www.mca-marines.org/wp-content/uploads/targeted-beirut.jpg",amazon:"https://www.amazon.com/s?k=9781668024362"},
+  {cat:"Innovation",title:"A Game of Birds and Wolves",author:"Simon Parkin",img:"https://www.mca-marines.org/wp-content/uploads/51pXqR0bsL._SY445_SX342_ML2_.jpg",amazon:"https://www.amazon.com/s?k=9780316492065"},
+  {cat:"Innovation",title:"Learning War: The Evolution of Fighting Doctrine in the U.S. Navy, 1898-1945",author:"Trent Hone",img:"https://www.mca-marines.org/wp-content/uploads/learning-war.jpg",amazon:"https://www.amazon.com/s?k=9781682478363"},
+  {cat:"Innovation",title:"Neptune's Inferno: The US Navy at Guadalcanal",author:"James D. Hornfischer",img:"https://www.mca-marines.org/wp-content/uploads/neptunes-inferno-1.jpg",amazon:"https://www.amazon.com/s?k=9780553385120"},
+  {cat:"Innovation",title:"A New Conception of War: John Boyd, the U.S. Marines, and Maneuver Warfare",author:"Ian T. Brown",img:"https://www.mca-marines.org/wp-content/uploads/a-new-conception-of-war.jpg",amazon:"https://www.amazon.com/s?k=9780997317497"},
+  {cat:"Innovation",title:"Playing War: Wargaming and U.S. Navy Preparations for World War II",author:"John M. Lillard",img:"https://www.mca-marines.org/wp-content/uploads/71DEtQ23YGL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9781612347738"},
+  {cat:"Innovation",title:"7 Seconds to Die: A Military Analysis of the Second Nagorno-Karabakh War and the Future of Warfighting",author:"John F. Antal",img:"https://www.mca-marines.org/wp-content/uploads/71mSQg5FrsL._AC_UL232_SR232232_.jpg",amazon:"https://www.amazon.com/s?k=9781636241234"},
+  {cat:"Innovation",title:"Evolution on Demand: The Changing Roles of the U.S. Marine Corps in Twenty-First Century Conflicts and Beyond",author:"Joanna Siekiera, Editor",img:"https://www.mca-marines.org/wp-content/uploads/Evolution-on-demand-thumbnail-scaled.jpg",amazon:"https://www.amazon.com/s?k=9798987336281"},
+  {cat:"Innovation",title:"Next War: Reimagining How We Fight",author:"John F. Antal",img:"https://www.mca-marines.org/wp-content/uploads/next-war.jpg",amazon:"https://www.amazon.com/s?k=9781636243351"},
+  {cat:"Innovation",title:"The Origins of Victory: How Disruptive Military Innovation Determines the Fates of Great Powers",author:"Andrew F. Krepinevich, Jr.",img:"https://www.mca-marines.org/wp-content/uploads/the-origins-of-victory.jpg",amazon:"https://www.amazon.com/s?k=9780300280098"},
+  {cat:"Innovation",title:"Where Good Ideas Come From: The Natural History of Innovation",author:"Steven Johnson",img:"https://www.mca-marines.org/wp-content/uploads/good-ideas.jpg",amazon:"https://www.amazon.com/s?k=9781594485381"},
+  {cat:"Innovation",title:"The Arms of the Future: Technology and Close Combat in the Twenty-First Century",author:"Jack Watling",img:null,amazon:"https://www.amazon.com/s?k=9781350352957"},
+  {cat:"Innovation",title:"Co-Intelligence: Living and Working with AI",author:"Ethan Mollick",img:"https://www.mca-marines.org/wp-content/uploads/co-intelligence.jpg",amazon:"https://www.amazon.com/s?k=9780593716717"},
+  {cat:"Innovation",title:"The Fourth Industrial Revolution",author:"Klaus Schwab",img:"https://www.mca-marines.org/wp-content/uploads/the-fourth-IR.jpg",amazon:"https://www.amazon.com/s?k=9781944835002"},
+  {cat:"Innovation",title:"Generative AI for Leaders",author:"Amir Husain",img:null,amazon:"https://www.amazon.com/s?k=9798988475156"},
+  {cat:"Innovation",title:"Soft-Wired: How the New Science of Brain Plasticity Can Change Your Life",author:"Michael Merzenich",img:null,amazon:"https://www.amazon.com/s?k=9780989432801"},
+  {cat:"Leadership",title:"Make Your Bed: Little Things That Can Change Your Life...And Maybe the World",author:"William H. McRaven",img:"https://www.mca-marines.org/wp-content/uploads/41VmJabAdOL._SY445_SX342_ML2_.jpg",amazon:"https://www.amazon.com/s?k=9781455570249"},
+  {cat:"Leadership",title:"On Killing: The Psychological Cost of Learning to Kill in War and Society",author:"Dave Grossman",img:"https://www.mca-marines.org/wp-content/uploads/61nOxvspStL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9780316040938"},
+  {cat:"Leadership",title:"The White Donkey: Terminal Lance",author:"Maximilian Uriarte",img:"https://www.mca-marines.org/wp-content/uploads/white-donkey.jpg",amazon:"https://www.amazon.com/s?k=9780316362832"},
+  {cat:"Leadership",title:"The Wisdom of the Bullfrog: Leadership Made Simple",author:"William H. McRaven",img:"https://www.mca-marines.org/wp-content/uploads/410hZdXOHbL._SY445_SX342_ML2_.jpg",amazon:"https://www.amazon.com/s?k=9781538707944"},
+  {cat:"Leadership",title:"You Are Worth It: Building a Life Worth Fighting For",author:"Kyle Carpenter and Don Yaeger",img:"https://www.mca-marines.org/wp-content/uploads/kyle-carpenter.jpg",amazon:"https://www.amazon.com/s?k=9780062898531"},
+  {cat:"Leadership",title:"Generals and Admirals, Criminals and Crooks: Dishonorable Leadership in the U.S. Military",author:"Jeffrey J. Matthews",img:"https://www.mca-marines.org/wp-content/uploads/81nVkYmVwwL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9780268206529"},
+  {cat:"Leadership",title:"The Greatest U.S. Marine Corps Stories Ever Told",author:"Iain C. Martin, Editor",img:"https://www.mca-marines.org/wp-content/uploads/61Jye29952L._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9781599210179"},
+  {cat:"Leadership",title:"Leadership Strategy and Tactics: Field Manual",author:"Jocko Willink",img:"https://www.mca-marines.org/wp-content/uploads/71EfhHNOZVL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9781250226846"},
+  {cat:"Leadership",title:"Matterhorn: A Novel of the Vietnam War",author:"Karl Marlantes",img:"https://www.mca-marines.org/wp-content/uploads/41H5GQacmoL.jpg",amazon:"https://www.amazon.com/s?k=9780802145314"},
+  {cat:"Leadership",title:"The Yompers: 45 Commando in the Falklands War",author:"Ian Gardiner",img:"https://www.mca-marines.org/wp-content/uploads/yompers.jpg",amazon:"https://www.amazon.com/s?k=9781473853423"},
+  {cat:"Leadership",title:"Call Sign Chaos: Learning to Lead",author:"Jim Mattis and Bing West",img:"https://www.mca-marines.org/wp-content/uploads/chaos.jpg",amazon:"https://www.amazon.com/s?k=9780812986631"},
+  {cat:"Leadership",title:"Essentialism: The Disciplined Pursuit of Less",author:"Greg McKeown",img:null,amazon:"https://www.amazon.com/s?k=9780804137409"},
+  {cat:"Leadership",title:"Five Generations at Work: How We Win Together, For Good",author:"Rebecca Robins and Patrick Dunne",img:null,amazon:"https://www.amazon.com/s?k=9781394252206"},
+  {cat:"Leadership",title:"Nimitz at War: Command Leadership from Pearl Harbor to Tokyo Bay",author:"Craig L. Symonds",img:null,amazon:"https://www.amazon.com/s?k=9780197761328"},
+  {cat:"Leadership",title:"Risk: A User's Guide",author:"Stanley McChrystal and Anna Butrico",img:"https://www.mca-marines.org/wp-content/uploads/61lirZDjRSL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9780593192207"},
+  {cat:"Strategy",title:"The Closing of the American Mind",author:"Allan Bloom",img:"https://www.mca-marines.org/wp-content/uploads/41E30VoGW9L._SY445_SX342_ControlCacheEqualizer_.jpg",amazon:"https://www.amazon.com/s?k=9780671657154"},
+  {cat:"Strategy",title:"The Defence of Duffer's Drift",author:"Ernest Dunlop Swinton",img:"https://www.mca-marines.org/wp-content/uploads/51z5BG3tgL._SX342_SY445_ControlCacheEqualizer_.jpg",amazon:"https://www.amazon.com/s?k=The+Defence+of+Duffer%27s+Drift+Ernest+Dunlop+Swinton"},
+  {cat:"Strategy",title:"Ender's Game",author:"Orson Scott Card",img:"https://www.mca-marines.org/wp-content/uploads/81pbRySSDbL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9780812550702"},
+  {cat:"Strategy",title:"The Infinite Game",author:"Simon Sinek",img:"https://www.mca-marines.org/wp-content/uploads/61aHNb8-l6L._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9780241385630"},
+  {cat:"Strategy",title:"Legacy: What the All Blacks Can Teach Us About the Business of Life",author:"James Kerr",img:"https://www.mca-marines.org/wp-content/uploads/81q-IFrSl4L._AC_UY436_QL65_.jpg",amazon:"https://www.amazon.com/s?k=9781472103536"},
+  {cat:"Strategy",title:"The Generals' War: The Inside Story of the Conflict in the Gulf",author:"Michael R. Gordon and Bernard E. Trainor",img:"https://www.mca-marines.org/wp-content/uploads/51FlN3oKzL._SY445_SX342_ControlCacheEqualizer_.jpg",amazon:"https://www.amazon.com/s?k=9780316321006"},
+  {cat:"Strategy",title:"Ground Combat: Puncturing the Myths of Modern War",author:"Ben Connable",img:"https://www.mca-marines.org/wp-content/uploads/61AAr72mmPL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9781647125424"},
+  {cat:"Strategy",title:"The New Makers of Modern Strategy: From the Ancient World to the Digital Age",author:"Hal Brands, Editor, et al.",img:"https://www.mca-marines.org/wp-content/uploads/the-new-makers.jpg",amazon:"https://www.amazon.com/s?k=9780691204383"},
+  {cat:"Strategy",title:"On Grand Strategy",author:"John Lewis Gaddis",img:"https://www.mca-marines.org/wp-content/uploads/71FUDyNCdyL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9780143132516"},
+  {cat:"Strategy",title:"Speed Kills: Leveraging John Boyd's OODA Loop to Build Organizations that Win",author:"Alex Vohr",img:"https://www.mca-marines.org/wp-content/uploads/41VI0VMLHL.jpg",amazon:"https://www.amazon.com/s?k=9798999360502"},
+  {cat:"Strategy",title:"Turn the Ship Around!: A True Story of Turning Followers into Leaders",author:"L. David Marquet",img:"https://www.mca-marines.org/wp-content/uploads/81EkILn8UfL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9781608323746"},
+  {cat:"Strategy",title:"Chinese Amphibious Warfare: Prospects for a Cross-Straits Invasion",author:"Andrew S. Erickson, Conor M. Kennedy, and Ryan D. Martinson, Editors",img:"https://www.mca-marines.org/wp-content/uploads/chinese-amphib-warfare.webp",amazon:"https://www.amazon.com/s?k=Chinese+Amphibious+Warfare%3A+Prospects+for+a+Cross-Straits+Invasion+Andrew+S.+Erickson%2C+Conor+M.+Kennedy%2C+and+Ryan+D.+Martinson%2C+Editors"},
+  {cat:"Strategy",title:"Command: The Politics of Military Operations from Korea to Ukraine",author:"Lawrence Freedman",img:"https://www.mca-marines.org/wp-content/uploads/command.jpg",amazon:"https://www.amazon.com/s?k=9780197694572"},
+  {cat:"Strategy",title:"Fleet Tactics and Naval Operations, Third Edition",author:"Wayne P. Hughes and Robert P. Girrier",img:"https://www.mca-marines.org/wp-content/uploads/fleet-tactics-2.jpg",amazon:"https://www.amazon.com/s?k=9781682473375"},
+  {cat:"Strategy",title:"The Long Game: China's Grand Strategy to Displace American Order",author:"Rush Doshi",img:"https://www.mca-marines.org/wp-content/uploads/51j1VlPCbGL._SY445_SX342_ControlCacheEqualizer_.jpg",amazon:"https://www.amazon.com/s?k=9780197645482"},
+  {cat:"Strategy",title:"The Russian Way of Deterrence: Strategic Culture, Coercion, and War",author:"Dmitry Adamsky",img:"https://www.mca-marines.org/wp-content/uploads/81EzHblBSQL._SY522_.jpg",amazon:"https://www.amazon.com/s?k=9781503637825"},
+];
+
+/* ---------------------------------------------------------------
    STATE (in-memory only - no localStorage per platform restriction)
 ----------------------------------------------------------------*/
 let state = {
@@ -836,6 +1039,7 @@ let state = {
   cards: {},      // id -> {ease, interval(days), due(ms), reps}
   appliedProg: {}, // id -> level (0/1/2)
   picturesProg: {}, // id -> level (0/1/2)
+  verbatimProg: {}, // id -> best pct achieved
   boardsTaken: 0,
   bestBoardPct: 0,
   podcastsListened: []
@@ -859,21 +1063,218 @@ function touchStreak(){
   }
 }
 
+function escHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---------------------------------------------------------------
+   VOICE DICTATION (Web Speech API) - mic buttons for Applied
+   Discussion, Murder Board, and Verbatim answer boxes
+----------------------------------------------------------------*/
+const dictation = {}; // target -> {rec, active, textareaId}
+function speechSupported(){
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+function toggleDictation(target, textareaId){
+  if(!speechSupported()){
+    alert("Voice dictation isn't supported in this browser. Try Chrome or Edge, or just type your answer.");
+    return;
+  }
+  if(dictation[target] && dictation[target].active){
+    stopDictation(target);
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = 'en-US';
+  rec.continuous = true;
+  rec.interimResults = true;
+  const ta = document.getElementById(textareaId);
+  let baseText = ta.value;
+  if(baseText && !/\s$/.test(baseText)) baseText += ' ';
+  let finalText = baseText;
+  rec.onresult = (e)=>{
+    let interim = '';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const chunk = e.results[i][0].transcript;
+      if(e.results[i].isFinal){ finalText += chunk.trim() + ' '; }
+      else { interim += chunk; }
+    }
+    ta.value = (finalText + interim).trim();
+  };
+  rec.onerror = (e)=>{
+    if(e.error==='not-allowed' || e.error==='service-not-allowed'){
+      alert("Microphone access was blocked. Allow mic access in your browser to use talk-to-text.");
+    }
+  };
+  rec.onend = ()=>{
+    if(dictation[target] && dictation[target].active){
+      try{ rec.start(); }catch(e){ /* already starting */ }
+    }
+  };
+  dictation[target] = {rec, active:true, textareaId};
+  try{
+    rec.start();
+    updateMicBtn(target, true);
+  }catch(e){
+    dictation[target].active = false;
+  }
+}
+function stopDictation(target){
+  const d = dictation[target];
+  if(!d) return;
+  d.active = false;
+  try{ d.rec.stop(); }catch(e){}
+  updateMicBtn(target, false);
+}
+function updateMicBtn(target, listening){
+  const btn = document.getElementById('mic-'+target);
+  if(!btn) return;
+  btn.classList.toggle('listening', listening);
+  btn.textContent = listening ? '⏹ Stop dictation' : '🎙 Talk to text';
+}
+window.addEventListener('DOMContentLoaded', ()=>{
+  if(!speechSupported()){
+    document.querySelectorAll('.mic-btn').forEach(b=>{
+      b.disabled = true;
+      b.textContent = '🎙 Mic not supported here';
+    });
+  }
+});
+
+/* ---------------------------------------------------------------
+   WORD-LEVEL MATCH SCORING (for Verbatim)
+----------------------------------------------------------------*/
+function normalizeWords(s){
+  return (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(Boolean);
+}
+function wordMatchPercent(target, attempt){
+  const t = normalizeWords(target);
+  const a = normalizeWords(attempt);
+  if(t.length===0) return 0;
+  if(a.length===0) return 0;
+  const n=t.length, m=a.length;
+  const dp = Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=1;i<=n;i++){
+    for(let j=1;j<=m;j++){
+      dp[i][j] = (t[i-1]===a[j-1]) ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  return Math.round((dp[n][m]/n)*100);
+}
+
+/* ---------------------------------------------------------------
+   VERBATIM TAB
+----------------------------------------------------------------*/
+let verbatimCurrent = null;
+function renderVerbatimTab(){
+  const sel = document.getElementById('verbatimSelect');
+  if(sel.options.length !== VERBATIM.length){
+    sel.innerHTML = VERBATIM.map(v=>'<option value="'+v.id+'">'+escHtml(v.title)+'</option>').join('');
+  }
+  loadVerbatim(sel.value || VERBATIM[0].id);
+}
+function loadVerbatim(id){
+  verbatimCurrent = VERBATIM.find(v=>v.id===id) || VERBATIM[0];
+  document.getElementById('verbatimSelect').value = verbatimCurrent.id;
+  document.getElementById('verbatimTag').textContent = verbatimCurrent.ref;
+  document.getElementById('verbatimPromptTitle').textContent = verbatimCurrent.title;
+  document.getElementById('verbatimAnswer').value='';
+  document.getElementById('verbatimResult').style.display='none';
+  const targetEl = document.getElementById('verbatimTarget');
+  targetEl.style.display='none';
+  targetEl.classList.remove('revealed');
+  targetEl.textContent='';
+  stopDictation('verbatim');
+}
+function revealVerbatim(){
+  if(!verbatimCurrent) return;
+  const targetEl = document.getElementById('verbatimTarget');
+  targetEl.textContent = verbatimCurrent.text;
+  targetEl.style.display='block';
+  targetEl.classList.add('revealed');
+}
+function checkVerbatim(){
+  if(!verbatimCurrent) return;
+  const attempt = document.getElementById('verbatimAnswer').value;
+  const pct = wordMatchPercent(verbatimCurrent.text, attempt);
+  state.verbatimProg[verbatimCurrent.id] = Math.max(state.verbatimProg[verbatimCurrent.id]||0, pct);
+  state.xp += (pct>90?5:pct>=60?2:1);
+  touchStreak();
+  const banner = document.getElementById('verbatimBanner');
+  const detail = document.getElementById('verbatimScoreDetail');
+  document.getElementById('verbatimResult').style.display='block';
+  if(pct>90){
+    banner.className='result-banner pass';
+    banner.textContent = 'Good to go - ' + pct + '% match';
+  } else if(pct>=60){
+    banner.className='result-banner warn';
+    banner.textContent = 'Working on it - ' + pct + '% match';
+  } else {
+    banner.className='result-banner fail';
+    banner.textContent = 'You got some work to do - ' + pct + '% match';
+  }
+  detail.textContent = 'Scored on word-for-word sequence match against the required text - tap "Show correct text" to see exactly where you drifted.';
+}
+
+/* ---------------------------------------------------------------
+   CPRL TAB (Commandant's Professional Reading List)
+----------------------------------------------------------------*/
+let cprlCategory = 'ALL';
+function cprlCategories(){
+  const seen = [];
+  CPRL.forEach(b=>{ if(!seen.includes(b.cat)) seen.push(b.cat); });
+  return seen;
+}
+function cprlSetCategory(cat){
+  cprlCategory = cat;
+  renderCprlTab();
+}
+function renderCprlTab(){
+  const bar = document.getElementById('cprlCatBar');
+  const cats = ['ALL'].concat(cprlCategories());
+  bar.innerHTML = cats.map(c=>{
+    const label = c==='ALL' ? ('All ('+CPRL.length+')') : (c+' ('+CPRL.filter(b=>b.cat===c).length+')');
+    const safe = c.replace(/'/g,"\\'");
+    return '<button class="'+(c===cprlCategory?'active':'')+'" onclick="cprlSetCategory(\''+safe+'\')">'+escHtml(label)+'</button>';
+  }).join('');
+  const grid = document.getElementById('cprlGrid');
+  const list = cprlCategory==='ALL' ? CPRL : CPRL.filter(b=>b.cat===cprlCategory);
+  grid.innerHTML = list.map(b=>{
+    const cover = b.img
+      ? '<img src="'+b.img+'" alt="'+escHtml(b.title)+'" loading="lazy" onerror="cprlImgError(this)">'
+      : '<div class="cprl-fallback">'+escHtml(b.title)+'</div>';
+    return '<a class="cprl-card" href="'+b.amazon+'" target="_blank" rel="noopener noreferrer">'
+      + '<div class="cprl-cover">'+cover+'</div>'
+      + '<div class="cprl-info"><p class="cprl-title">'+escHtml(b.title)+'</p><p class="cprl-author">'+escHtml(b.author)+'</p><p class="cprl-buy">Buy on Amazon &rarr;</p></div>'
+      + '</a>';
+  }).join('');
+}
+function cprlImgError(el){
+  const title = el.alt || '';
+  el.parentElement.innerHTML = '<div class="cprl-fallback">'+title+'</div>';
+}
+
 /* ---------------------------------------------------------------
    TABS
 ----------------------------------------------------------------*/
 function goTab(name){
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
-  ['dashboard','flash','applied','podcast','pictures','board','progress'].forEach(t=>{
+  ['dashboard','flash','applied','verbatim','podcast','pictures','cprl','board','progress'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
   });
   if(name!=='podcast') podcastStop();
   if(name!=='board') stopBoardSpeech();
+  if(name!=='applied') stopDictation('applied');
+  if(name!=='board') stopDictation('board');
+  if(name!=='verbatim') stopDictation('verbatim');
   if(name==='dashboard') renderDashboard();
   if(name==='flash') renderFlashTab();
   if(name==='applied') renderAppliedTab();
+  if(name==='verbatim') renderVerbatimTab();
   if(name==='podcast') renderPodcastTab();
   if(name==='pictures') renderPicturesTab();
+  if(name==='cprl') renderCprlTab();
   if(name==='progress') renderProgress();
 }
 document.getElementById('tabs').addEventListener('click', e=>{
@@ -1121,6 +1522,7 @@ function renderAppliedTab(){
 }
 function nextApplied(){
   document.getElementById('appliedAnswer').value='';
+  stopDictation('applied');
   document.querySelectorAll('#appliedRate button').forEach(b=>b.className='');
   if(appliedQueue.length===0){
     document.getElementById('appliedTag').textContent='';
@@ -1169,6 +1571,8 @@ function startBoard(){
 }
 function nextBoardQ(){
   stopBoardSpeech();
+  stopDictation('board');
+  document.getElementById('boardAnswer').value='';
   document.getElementById('boardRah').classList.remove('show');
   document.getElementById('boardA').style.display='none';
   document.getElementById('boardRateRow').style.display='none';
@@ -1482,7 +1886,7 @@ function importProgress(evt){
   reader.onload = function(e){
     try{
       const loaded = JSON.parse(e.target.result);
-      state = Object.assign({xp:0,streakDays:0,lastActiveDate:null,cards:{},appliedProg:{},picturesProg:{},boardsTaken:0,bestBoardPct:0,podcastsListened:[]}, loaded);
+      state = Object.assign({xp:0,streakDays:0,lastActiveDate:null,cards:{},appliedProg:{},picturesProg:{},verbatimProg:{},boardsTaken:0,bestBoardPct:0,podcastsListened:[]}, loaded);
       renderDashboard(); renderProgress();
       alert('Progress imported.');
     }catch(err){ alert('Could not read that file - is it a progress export from this tool?'); }
