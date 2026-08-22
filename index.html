@@ -53,7 +53,7 @@
     padding:4px 10px;border-radius:999px;font-size:.72rem;color:#fff;white-space:nowrap;
   }
   nav.tabs{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:18px;background:var(--card);
+    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:18px;background:var(--card);
     padding:6px;border-radius:12px;box-shadow:var(--shadow);
   }
   nav.tabs button{
@@ -135,6 +135,7 @@
   .self-rate button.sel-solid{border-color:var(--good);color:var(--good);}
   .board-progress{font-size:.8rem;color:var(--ink-soft);margin-bottom:8px;}
   #boardRun{position:relative;}
+  #rankGamePlay{position:relative;}
   .rah-pop{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.6);
     font-size:3.2rem;font-weight:800;color:var(--scarlet);text-shadow:0 2px 0 var(--gold);
@@ -173,6 +174,27 @@
     display:inline-block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
     color:#fff;background:var(--scarlet);padding:3px 9px;border-radius:999px;margin-bottom:8px;
   }
+  .rank-frame{
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#111;
+    aspect-ratio:1/1;width:100%;max-width:600px;margin:0 auto;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .rank-frame img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;}
+  .rank-frame .rank-fallback{color:#cfcac0;font-size:.85rem;padding:20px;text-align:center;line-height:1.6;}
+  .rank-timer-track{height:8px;background:#e9e4d8;border-radius:99px;overflow:hidden;margin-bottom:10px;}
+  .rank-timer-track > div{height:100%;background:linear-gradient(90deg,var(--gold),var(--scarlet));width:100%;}
+  .rank-hud{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--ink-soft);margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+  .rank-hud b{color:var(--navy);font-size:1rem;}
+  .rank-opt-btn{
+    display:block;width:100%;text-align:left;padding:14px 16px;border-radius:10px;
+    border:1px solid var(--line);background:#fff;color:var(--ink);font-size:.98rem;font-weight:600;
+    cursor:pointer;transition:.12s;margin-bottom:8px;
+  }
+  .rank-opt-btn:hover:not(:disabled){border-color:var(--navy);background:#f7f5f0;}
+  .rank-opt-btn:disabled{cursor:default;opacity:.85;}
+  .rank-opt-btn.correct{background:var(--good);border-color:var(--good);color:#fff;opacity:1;}
+  .rank-opt-btn.wrong{background:var(--bad);border-color:var(--bad);color:#fff;opacity:1;}
+  .rank-game-rah{color:var(--scarlet);font-size:2.2rem;}
   .mic-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
   .mic-btn{
     display:inline-flex;align-items:center;justify-content:center;gap:6px;
@@ -243,6 +265,7 @@
     <button data-tab="pictures">Pictures</button>
     <button data-tab="cprl">CPRL</button>
     <button data-tab="board">Murder Board</button>
+    <button data-tab="ranks">Ranks</button>
   </nav>
 
   <!-- DASHBOARD -->
@@ -270,6 +293,7 @@
         <button class="btn ghost" onclick="goTab('pictures')">Identify equipment</button>
         <button class="btn ghost" onclick="goTab('verbatim')">Drill verbatim knowledge</button>
         <button class="btn scarlet" onclick="goTab('board')">Take a murder board</button>
+        <button class="btn ghost" onclick="goTab('ranks')">Drill rank insignia</button>
       </div>
     </div>
     <div class="card">
@@ -457,6 +481,67 @@
     </div>
   </section>
 
+  <!-- RANKS -->
+  <section id="tab-ranks" style="display:none">
+    <div class="card">
+      <h2 style="margin-bottom:2px;">Rank Insignia</h2>
+      <p class="muted" style="margin:0;">All 27 Marine Corps enlisted, warrant, and officer ranks. Images are hotlinked live from marines.mil (the official source) rather than stored in this file, so they need an internet connection to load - if one fails, a labeled placeholder shows instead of a broken image.</p>
+      <div class="cprl-cat-bar" id="rankModeBar">
+        <button class="active" data-mode="flash" onclick="setRankMode('flash')">Flashcards</button>
+        <button data-mode="game" onclick="setRankMode('game')">Speed Round</button>
+      </div>
+    </div>
+
+    <div class="card" id="rankFlashCard">
+      <div class="board-progress" id="rankFlashCounter"></div>
+      <div class="pic-cat-tag" id="rankFlashCat"></div>
+      <div class="rank-frame" id="rankFlashFrame">
+        <img id="rankFlashImg" src="" alt="Rank insignia" onerror="handleRankImgError(this, rankFlashCurrent)">
+      </div>
+      <div id="rankFlashRevealRow" style="margin-top:14px;">
+        <button class="btn" style="width:100%" onclick="revealRankFlash()">What rank is this?</button>
+      </div>
+      <div id="rankFlashAnswerBlock" style="display:none;text-align:center;">
+        <div class="pic-name" id="rankFlashName"></div>
+        <div class="muted" id="rankFlashNote" style="margin-top:2px;"></div>
+      </div>
+      <div class="rate-row" id="rankFlashRateRow" style="display:none">
+        <button class="rate-btn rate-red" onclick="rateRankFlash(0)">No clue</button>
+        <button class="rate-btn rate-yellow" onclick="rateRankFlash(1)">Vaguely remember</button>
+        <button class="rate-btn rate-green" onclick="rateRankFlash(2)">Good to go!</button>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn ghost" id="rankFlashPrevBtn" onclick="prevRankFlash()" disabled>&larr; Back</button>
+        <button class="btn ghost" onclick="nextRankFlash()">Next &rarr;</button>
+      </div>
+    </div>
+
+    <div class="card" id="rankGameCard" style="display:none">
+      <div id="rankGameStart">
+        <h3 style="margin-top:0;">Rank ID Speed Round</h3>
+        <p class="muted">You'll get 3 seconds to pick the right rank from 3 options. Keep answering correctly to build your streak - one miss (wrong pick or running out of time) and it resets to zero. Clear every rank in a round with no misses and you'll earn an "Oorah! Kill!"</p>
+        <button class="btn scarlet" style="width:100%" onclick="startRankGame()">Start Speed Round</button>
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);margin-top:16px;">
+          <div class="stat"><div class="num" id="rankBestStreakStat">0</div><div class="lbl">Best Streak Ever</div></div>
+          <div class="stat"><div class="num" id="rankLastStreakStat">-</div><div class="lbl">Last Streak</div></div>
+        </div>
+      </div>
+      <div id="rankGamePlay" style="display:none">
+        <div class="rank-hud">
+          <span>Streak: <b id="rankGameStreakHud">0</b></span>
+          <span>Best: <b id="rankGameBestHud">0</b></span>
+        </div>
+        <div class="rank-timer-track"><div id="rankTimerBar"></div></div>
+        <div class="rank-frame" id="rankGameFrame">
+          <img id="rankGameImg" src="" alt="Identify this rank" onerror="handleRankImgError(this, rankGameCurrent)">
+        </div>
+        <div class="rah-pop rank-game-rah" id="rankGameRah" aria-hidden="true">Oorah! Kill!</div>
+        <div id="rankGameOptions" style="margin-top:14px;"></div>
+        <button class="btn ghost" style="width:100%;margin-top:4px;" onclick="stopRankGame()">End Speed Round</button>
+      </div>
+    </div>
+  </section>
+
   <!-- CPRL -->
   <section id="tab-cprl" style="display:none">
     <div class="card">
@@ -545,7 +630,8 @@
         <b>Listen</b> - read-aloud playback of study sections for passive review.<br>
         <b>Pictures</b> - visual identification drills for ships, vehicles, aircraft, and weapons.<br>
         <b>CPRL</b> - the Commandant's Professional Reading List, browsable by category with links to buy each title.<br>
-        <b>Murder Board</b> - a timed, mixed rote/applied practice board scored to the same 80% standard as the real oral board.
+        <b>Murder Board</b> - a timed, mixed rote/applied practice board scored to the same 80% standard as the real oral board.<br>
+        <b>Ranks</b> - flashcards for all 27 rank insignia, plus a 2-second-per-question Speed Round that tracks your streak.
       </p>
       <p class="muted" style="margin-top:10px;">This is a living tool built for Marines and Sailors preparing for the board - it will keep improving.</p>
     </div>
@@ -558,6 +644,7 @@
         <div class="stat"><div class="num" id="progBest">0%</div><div class="lbl">Best board score</div></div>
         <div class="stat"><div class="num" id="progPodcasts">0</div><div class="lbl">Sections listened</div></div>
         <div class="stat"><div class="num" id="progPictures">0</div><div class="lbl">Pictures ID'd</div></div>
+        <div class="stat"><div class="num" id="progRankStreak">0</div><div class="lbl">Best rank streak</div></div>
       </div>
     </div>
     <div class="card">
@@ -1125,6 +1212,40 @@ const PICTURES = [
 ];
 
 /* ---------------------------------------------------------------
+   RANKS - Marine Corps rank insignia, sourced live from marines.mil
+   (official public source; images are hotlinked, not stored here)
+----------------------------------------------------------------*/
+const RANKS = [
+  {id:"E1", cat:"enlisted", grade:"E-1", title:"Private", abbr:"Pvt", img:null, note:"No insignia is worn for this rank."},
+  {id:"E2", cat:"enlisted", grade:"E-2", title:"Private First Class", abbr:"PFC", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/private-first-class.png", note:null},
+  {id:"E3", cat:"enlisted", grade:"E-3", title:"Lance Corporal", abbr:"LCpl", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/lance-corporal.png", note:null},
+  {id:"E4", cat:"enlisted", grade:"E-4", title:"Corporal", abbr:"Cpl", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/corporal.png", note:null},
+  {id:"E5", cat:"enlisted", grade:"E-5", title:"Sergeant", abbr:"Sgt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/sergeant.png", note:null},
+  {id:"E6", cat:"enlisted", grade:"E-6", title:"Staff Sergeant", abbr:"SSgt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/staff_sergeant.png", note:null},
+  {id:"E7", cat:"enlisted", grade:"E-7", title:"Gunnery Sergeant", abbr:"GySgt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/gunnery_sergeant.png", note:null},
+  {id:"E8A", cat:"enlisted", grade:"E-8", title:"Master Sergeant", abbr:"MSgt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/master_sergeant.png", note:"E-8 (technical/MOS track)"},
+  {id:"E8B", cat:"enlisted", grade:"E-8", title:"First Sergeant", abbr:"1stSgt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/first_sergeant.png", note:"E-8 (command track)"},
+  {id:"E9A", cat:"enlisted", grade:"E-9", title:"Master Gunnery Sergeant", abbr:"MGySgt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/master_gunnery_sergeant.png", note:"E-9 (technical/MOS track)"},
+  {id:"E9B", cat:"enlisted", grade:"E-9", title:"Sergeant Major", abbr:"SgtMaj", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/sergeant_major.png", note:"E-9 (command track)"},
+  {id:"E9C", cat:"enlisted", grade:"E-9", title:"Sergeant Major of the Marine Corps", abbr:"SMMC", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/sergeant_major_of_the_marines.png", note:"Single billet, highest enlisted rank"},
+  {id:"W1", cat:"warrant", grade:"WO-1", title:"Warrant Officer 1", abbr:"WO1", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/warrant_officer.png", note:null},
+  {id:"W2", cat:"warrant", grade:"CWO-2", title:"Chief Warrant Officer 2", abbr:"CWO2", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/chief_warrant_officer_2.png", note:null},
+  {id:"W3", cat:"warrant", grade:"CWO-3", title:"Chief Warrant Officer 3", abbr:"CWO3", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/chief_warrant_officer_3.png", note:null},
+  {id:"W4", cat:"warrant", grade:"CWO-4", title:"Chief Warrant Officer 4", abbr:"CWO4", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/chief_warrant_officer_4.png", note:null},
+  {id:"W5", cat:"warrant", grade:"CWO-5", title:"Chief Warrant Officer 5", abbr:"CWO5", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/chief_warrant_officer_5.png", note:null},
+  {id:"O1", cat:"officer", grade:"O-1", title:"Second Lieutenant", abbr:"2ndLt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/second%20lieutenant.jpg", note:null},
+  {id:"O2", cat:"officer", grade:"O-2", title:"First Lieutenant", abbr:"1stLt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/first_lieutenant.png", imgAlt:"https://commons.wikimedia.org/wiki/Special:FilePath/First%20Lieutenant%20Insignia%20USMC.png", note:null},
+  {id:"O3", cat:"officer", grade:"O-3", title:"Captain", abbr:"Capt", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/captain.png", imgAlt:"https://commons.wikimedia.org/wiki/Special:FilePath/Captain%20Insignia%20USMC.png", note:null},
+  {id:"O4", cat:"officer", grade:"O-4", title:"Major", abbr:"Maj", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/major.png", note:null},
+  {id:"O5", cat:"officer", grade:"O-5", title:"Lieutenant Colonel", abbr:"LtCol", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/lieutenant_colonel.png", note:null},
+  {id:"O6", cat:"officer", grade:"O-6", title:"Colonel", abbr:"Col", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/colonel.png", note:null},
+  {id:"O7", cat:"officer", grade:"O-7", title:"Brigadier General", abbr:"BGen", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/brigadier_general.png", note:null},
+  {id:"O8", cat:"officer", grade:"O-8", title:"Major General", abbr:"MajGen", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/major_general.png", note:null},
+  {id:"O9", cat:"officer", grade:"O-9", title:"Lieutenant General", abbr:"LtGen", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/lieutenant_general.png", note:null},
+  {id:"O10", cat:"officer", grade:"O-10", title:"General", abbr:"Gen", img:"https://www.marines.mil/portals/1/CustomCSS/ranks/img/general.png", note:null},
+];
+
+/* ---------------------------------------------------------------
    VERBATIM - knowledge that must be recited word-for-word
 ----------------------------------------------------------------*/
 const VERBATIM = [
@@ -1227,7 +1348,10 @@ let state = {
   boardsTaken: 0,
   bestBoardPct: 0,
   podcastsListened: [],
-  flashRunHistory: [] // [{date, section, total, red, yellow, green, pctRed, pctYellow, pctGreen}]
+  flashRunHistory: [], // [{date, section, total, red, yellow, green, pctRed, pctYellow, pctGreen}]
+  rankFlashProg: {}, // id -> level (0/1/2)
+  rankGameBestStreak: 0,
+  rankGameLastStreak: 0
 };
 
 function cardId(item){ return "R:" + item.s + ":" + item.q.slice(0,24); }
@@ -1447,7 +1571,7 @@ function cprlImgError(el){
 ----------------------------------------------------------------*/
 function goTab(name){
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
-  ['dashboard','flash','applied','verbatim','podcast','pictures','cprl','board','progress'].forEach(t=>{
+  ['dashboard','flash','applied','verbatim','podcast','pictures','cprl','board','ranks','progress'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
   });
   if(name!=='podcast') podcastStop();
@@ -1455,6 +1579,7 @@ function goTab(name){
   if(name!=='applied') stopDictation('applied');
   if(name!=='board') stopDictation('board');
   if(name!=='verbatim') stopDictation('verbatim');
+  if(name!=='ranks') rankGamePause();
   if(name==='dashboard') renderDashboard();
   if(name==='flash') renderFlashTab();
   if(name==='applied') renderAppliedTab();
@@ -1462,6 +1587,7 @@ function goTab(name){
   if(name==='podcast') renderPodcastTab();
   if(name==='pictures') renderPicturesTab();
   if(name==='cprl') renderCprlTab();
+  if(name==='ranks') renderRanksTab();
   if(name==='progress') renderProgress();
 }
 document.getElementById('tabs').addEventListener('click', e=>{
@@ -1529,6 +1655,7 @@ function renderProgress(){
   document.getElementById('progBest').textContent = state.bestBoardPct+'%';
   document.getElementById('progPodcasts').textContent = state.podcastsListened.length;
   document.getElementById('progPictures').textContent = Object.keys(state.picturesProg).length + '/' + PICTURES.length;
+  document.getElementById('progRankStreak').textContent = state.rankGameBestStreak || 0;
   renderSectionBars('progSections');
 }
 
@@ -1613,6 +1740,230 @@ function ratePicture(v){
   document.querySelector('#pictureRate button[data-v="'+v+'"]').classList.add(cls);
 }
 document.getElementById('pictureCategory').addEventListener('change', renderPicturesTab);
+
+/* ---------------------------------------------------------------
+   RANKS - flashcards + Speed Round game
+----------------------------------------------------------------*/
+let rankMode = 'flash';
+function rankGamePool(){ return RANKS.filter(r=>r.img); } // excludes E-1 (no insignia)
+
+function setRankMode(mode){
+  rankMode = mode;
+  document.querySelectorAll('#rankModeBar button').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('rankFlashCard').style.display = (mode==='flash') ? 'block' : 'none';
+  document.getElementById('rankGameCard').style.display = (mode==='game') ? 'block' : 'none';
+  if(mode==='game') rankGamePause();
+}
+
+function renderRanksTab(){
+  setRankMode(rankMode);
+  buildRankFlashQueue();
+  document.getElementById('rankBestStreakStat').textContent = state.rankGameBestStreak || 0;
+  document.getElementById('rankLastStreakStat').textContent = state.rankGameLastStreak || '-';
+}
+
+/* --- Flashcard mode --- */
+let rankFlashQueue = [];
+let rankFlashCurrent = null;
+let rankFlashHistory = [];
+
+function buildRankFlashQueue(){
+  rankFlashQueue = shuffle(RANKS.slice());
+  rankFlashHistory = [];
+  rankFlashCurrent = null;
+  nextRankFlash();
+}
+function showRankImgFallback(frameId, message){
+  const frame = document.getElementById(frameId);
+  if(frame) frame.innerHTML = '<div class="rank-fallback">'+message+'</div>';
+}
+function handleRankImgError(el, rank){
+  if(!rank) return;
+  if(!el.dataset.triedAlt && rank.imgAlt){
+    el.dataset.triedAlt = '1';
+    el.src = rank.imgAlt;
+    return;
+  }
+  const frame = el.closest('.rank-frame');
+  if(frame) frame.innerHTML = '<div class="rank-fallback">Image did not load (offline, blocked connection, or the source is temporarily unavailable).<br>Use the name/reveal option below - it still works.</div>';
+}
+function rankFlashImgError(){
+  showRankImgFallback('rankFlashFrame', 'Image did not load (offline or blocked connection).<br>Use "What rank is this?" below - the name still works.');
+}
+function resetRankFlashCardUI(){
+  document.getElementById('rankFlashRevealRow').style.display = 'block';
+  document.getElementById('rankFlashAnswerBlock').style.display = 'none';
+  document.getElementById('rankFlashRateRow').style.display = 'none';
+  const frame = document.getElementById('rankFlashFrame');
+  frame.innerHTML = '<img id="rankFlashImg" src="" alt="Rank insignia" onerror="handleRankImgError(this, rankFlashCurrent)">';
+}
+function displayRankFlashCard(){
+  document.getElementById('rankFlashCat').textContent = rankFlashCurrent.cat.toUpperCase() + ' · ' + rankFlashCurrent.grade;
+  document.getElementById('rankFlashCounter').textContent = rankFlashQueue.length + ' more queued this pass';
+  if(rankFlashCurrent.img){
+    document.getElementById('rankFlashImg').src = rankFlashCurrent.img;
+  } else {
+    showRankImgFallback('rankFlashFrame', 'No insignia is worn for this rank.');
+  }
+  document.getElementById('rankFlashPrevBtn').disabled = (rankFlashHistory.length===0);
+}
+function nextRankFlash(){
+  resetRankFlashCardUI();
+  if(rankFlashQueue.length===0){
+    document.getElementById('rankFlashCat').textContent='';
+    document.getElementById('rankFlashCounter').textContent='All ranks done for this pass - reopen the tab to shuffle a new one.';
+    rankFlashCurrent=null;
+    document.getElementById('rankFlashPrevBtn').disabled = (rankFlashHistory.length===0);
+    return;
+  }
+  if(rankFlashCurrent) rankFlashHistory.push(rankFlashCurrent);
+  rankFlashCurrent = rankFlashQueue.shift();
+  displayRankFlashCard();
+}
+function prevRankFlash(){
+  if(rankFlashHistory.length===0 || !rankFlashCurrent) return;
+  resetRankFlashCardUI();
+  rankFlashQueue.unshift(rankFlashCurrent);
+  rankFlashCurrent = rankFlashHistory.pop();
+  displayRankFlashCard();
+}
+function revealRankFlash(){
+  if(!rankFlashCurrent) return;
+  document.getElementById('rankFlashRevealRow').style.display = 'none';
+  document.getElementById('rankFlashName').textContent = rankFlashCurrent.grade + ' - ' + rankFlashCurrent.title + ' (' + rankFlashCurrent.abbr + ')';
+  document.getElementById('rankFlashNote').textContent = rankFlashCurrent.note || '';
+  document.getElementById('rankFlashAnswerBlock').style.display = 'block';
+  document.getElementById('rankFlashRateRow').style.display = 'grid';
+}
+function rateRankFlash(v){
+  if(!rankFlashCurrent) return;
+  state.rankFlashProg[rankFlashCurrent.id] = v;
+  state.xp += (v===2?3:v===1?1:1);
+  touchStreak();
+  setTimeout(nextRankFlash, 150);
+}
+
+/* --- Speed Round game --- */
+let rankGameActive = false;
+let rankGameDeck = [];
+let rankGameCurrent = null;
+let rankGameStreak = 0;
+let rankGameLapMisses = 0;
+let rankGameAnswered = false;
+let rankGameInterval = null;
+let rankGameDeadline = null;
+const RANK_GAME_MS = 3000;
+
+function rankGamePause(){
+  rankGameActive = false;
+  clearRankGameTimer();
+}
+function clearRankGameTimer(){
+  if(rankGameInterval){ clearInterval(rankGameInterval); rankGameInterval = null; }
+  rankGameDeadline = null;
+}
+function buildRankGameDeck(){
+  rankGameDeck = shuffle(rankGamePool().slice());
+  rankGameLapMisses = 0;
+}
+function startRankGame(){
+  rankGameActive = true;
+  rankGameStreak = 0;
+  rankGameAnswered = false;
+  document.getElementById('rankGameStart').style.display = 'none';
+  document.getElementById('rankGamePlay').style.display = 'block';
+  buildRankGameDeck();
+  updateRankGameHud();
+  nextRankQuestion();
+}
+function stopRankGame(){
+  clearRankGameTimer();
+  rankGameActive = false;
+  state.rankGameLastStreak = rankGameStreak;
+  state.rankGameBestStreak = Math.max(state.rankGameBestStreak||0, rankGameStreak);
+  touchStreak();
+  document.getElementById('rankGamePlay').style.display = 'none';
+  document.getElementById('rankGameStart').style.display = 'block';
+  document.getElementById('rankBestStreakStat').textContent = state.rankGameBestStreak || 0;
+  document.getElementById('rankLastStreakStat').textContent = state.rankGameLastStreak;
+}
+function updateRankGameHud(){
+  document.getElementById('rankGameStreakHud').textContent = rankGameStreak;
+  const best = Math.max(state.rankGameBestStreak||0, rankGameStreak);
+  document.getElementById('rankGameBestHud').textContent = best;
+}
+function pickDistractors(current){
+  const pool = rankGamePool().filter(r=>r.id!==current.id);
+  const sameCat = shuffle(pool.filter(r=>r.cat===current.cat));
+  const rest = shuffle(pool.filter(r=>r.cat!==current.cat));
+  const picks = [];
+  sameCat.concat(rest).forEach(r=>{ if(picks.length<2) picks.push(r); });
+  return picks;
+}
+function rankGameImgError(){
+  const frame = document.getElementById('rankGameFrame');
+  frame.innerHTML = '<div class="rank-fallback">Image did not load (offline or blocked connection). End the round and try again once you have a connection.</div>';
+}
+function nextRankQuestion(){
+  if(!rankGameActive) return;
+  clearRankGameTimer();
+  if(rankGameDeck.length===0){
+    if(rankGameLapMisses===0) showRankGameRah();
+    buildRankGameDeck();
+  }
+  rankGameAnswered = false;
+  rankGameCurrent = rankGameDeck.shift();
+  const opts = shuffle([rankGameCurrent].concat(pickDistractors(rankGameCurrent)));
+  const frame = document.getElementById('rankGameFrame');
+  frame.innerHTML = '<img id="rankGameImg" src="" alt="Identify this rank" onerror="handleRankImgError(this, rankGameCurrent)">';
+  document.getElementById('rankGameImg').src = rankGameCurrent.img;
+  const optWrap = document.getElementById('rankGameOptions');
+  optWrap.innerHTML = opts.map(o=>
+    '<button class="rank-opt-btn" data-id="'+o.id+'" onclick="answerRank(\''+o.id+'\')">'+o.grade+' - '+o.title+'</button>'
+  ).join('');
+  document.getElementById('rankTimerBar').style.transition = 'none';
+  document.getElementById('rankTimerBar').style.width = '100%';
+  void document.getElementById('rankTimerBar').offsetWidth; // restart transition
+  document.getElementById('rankTimerBar').style.transition = 'width '+RANK_GAME_MS+'ms linear';
+  document.getElementById('rankTimerBar').style.width = '0%';
+  rankGameDeadline = Date.now() + RANK_GAME_MS;
+  rankGameInterval = setInterval(()=>{
+    if(Date.now() >= rankGameDeadline){
+      clearRankGameTimer();
+      answerRank(null);
+    }
+  }, 80);
+}
+function answerRank(pickedId){
+  if(!rankGameActive || rankGameAnswered || !rankGameCurrent) return;
+  rankGameAnswered = true;
+  clearRankGameTimer();
+  const correct = pickedId === rankGameCurrent.id;
+  document.querySelectorAll('#rankGameOptions .rank-opt-btn').forEach(btn=>{
+    btn.disabled = true;
+    if(btn.dataset.id === rankGameCurrent.id) btn.classList.add('correct');
+    else if(btn.dataset.id === pickedId) btn.classList.add('wrong');
+  });
+  if(correct){
+    rankGameStreak++;
+    state.xp += 2;
+  } else {
+    rankGameLapMisses++;
+    state.rankGameLastStreak = rankGameStreak;
+    state.rankGameBestStreak = Math.max(state.rankGameBestStreak||0, rankGameStreak);
+    rankGameStreak = 0;
+  }
+  touchStreak();
+  updateRankGameHud();
+  setTimeout(()=>{ if(rankGameActive) nextRankQuestion(); }, correct?450:1200);
+}
+function showRankGameRah(){
+  const el = document.getElementById('rankGameRah');
+  if(!el) return;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
 
 /* ---------------------------------------------------------------
    FLASHCARDS (SM-2 lite)
@@ -2111,7 +2462,7 @@ function importProgress(evt){
   reader.onload = function(e){
     try{
       const loaded = JSON.parse(e.target.result);
-      state = Object.assign({xp:0,streakDays:0,lastActiveDate:null,cards:{},appliedProg:{},picturesProg:{},verbatimProg:{},boardsTaken:0,bestBoardPct:0,podcastsListened:[],flashRunHistory:[]}, loaded);
+      state = Object.assign({xp:0,streakDays:0,lastActiveDate:null,cards:{},appliedProg:{},picturesProg:{},verbatimProg:{},boardsTaken:0,bestBoardPct:0,podcastsListened:[],flashRunHistory:[],rankFlashProg:{},rankGameBestStreak:0,rankGameLastStreak:0}, loaded);
       renderDashboard(); renderProgress();
       alert('Progress imported.');
     }catch(err){ alert('Could not read that file - is it a progress export from this tool?'); }
